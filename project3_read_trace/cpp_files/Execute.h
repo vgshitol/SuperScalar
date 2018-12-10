@@ -26,12 +26,18 @@ public:
     void execute(vector<Instruction> *instructionsVector) {
 
         if(!instructionsVector->empty()) {
-            for (int i = 0; i < width - instruction.size(); ++i) {
-                Instruction temp_instruction = instructionsVector->at(i);
+            int skipped_count = 0;
+            int instr_size = instruction.size();
+            for (int i = 0; (i < width - instr_size) && !instructionsVector->empty(); ++i) {
+                Instruction temp_instruction = instructionsVector->at(0);
                 // If instruction is ready to execute
                 if (temp_instruction.issue_valid && temp_instruction.rs1_ready && temp_instruction.rs2_ready){
                     instruction.push_back(temp_instruction); // get the first instruction from the file
-                    instructionsVector->erase(instructionsVector->begin() + i); // erase the first instruction from the file
+                    instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
+                } else {
+                    instructionsVector->push_back(temp_instruction); // put the first instruction from the file to the last
+                    instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
+                    skipped_count++;
                 }
             }
         }

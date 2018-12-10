@@ -101,21 +101,19 @@ public:
         rmt.resize(67);
     }
 
-
-
-
     bool architectureStages(void){
 
         retireStage.setAcceptable_width(width*5);
         retireStage.execute(&writebackStage.instruction, &rob);
-        writebackStage.execute(&executeStage.instruction);
+        writebackStage.execute(&executeStage.instruction, &issueQueueStage.instruction, &dispatchStage.instruction,
+                &registerReadStage.instruction, &rob);
         executeStage.execute(&issueQueueStage.instruction);
-        issueQueueStage.execute(&dispatchStage.instruction, executeStage.getAcceptable_width(), dispatchStage.width);
-        dispatchStage.execute(&registerReadStage.instruction, issueQueueStage.getAcceptable_width());
-        registerReadStage.execute(&renameStage.instruction, dispatchStage.getAcceptable_width());
-        renameStage.execute(&decodeStage.instruction, registerReadStage.getAcceptable_width(), &rmt, &rob, rob_size);
-        decodeStage.execute(&fetchStage.instruction, renameStage.getAcceptable_width());
-        fetchStage.execute(&instruction, decodeStage.getAcceptable_width()); //4 - acceptable width from decode.
+        issueQueueStage.execute(&dispatchStage.instruction, dispatchStage.width);
+        dispatchStage.execute(&registerReadStage.instruction);
+        registerReadStage.execute(&renameStage.instruction, &rob);
+        renameStage.execute(&decodeStage.instruction, &rmt, &rob, rob_size);
+        decodeStage.execute(&fetchStage.instruction);
+        fetchStage.execute(&instruction); //4 - acceptable width from decode.
 
         return eofFlag;
     }

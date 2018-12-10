@@ -24,10 +24,10 @@ public:
         IssueQueueStage::acceptable_width = acceptable_width;
     }
 
-    void execute(vector<Instruction> *instructionsVector, int acceptableExecuteRegisterWidth, int dispatch_width) {
+    void execute(vector<Instruction> *instructionsVector, int dispatch_width) {
 
-        if(!instructionsVector->empty()) {
-            for (int i = 0; i < width - instruction.size(); ++i) {
+        if((width - instruction.size() >= dispatch_width) && !instructionsVector->empty()) {
+            for (int i = 0; i < dispatch_width; ++i) {
 
                 Instruction temp_instruction = instructionsVector->at(0); // get the first instruction from the file
 

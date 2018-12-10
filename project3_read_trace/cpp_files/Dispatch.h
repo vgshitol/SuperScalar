@@ -23,25 +23,20 @@ public:
         Dispatch::acceptable_width = acceptable_width;
     }
 
-    void execute(vector<Instruction> *instructionsVector, int acceptableIssueQueueRegisterWidth) {
-        if(instructionsVector->empty() || (acceptableIssueQueueRegisterWidth == 0)){
-            // Do Nothing
-        }
+    void execute(vector<Instruction> *instructionsVector) {
 
-        else if(!instructionsVector->empty()) {
-            for (int i = 0; i < min(acceptableIssueQueueRegisterWidth,width); ++i) {
-                instructionsVector->at(0).DispatchCycle++;
+        if(!instructionsVector->empty()) {
+            int instr_size = instruction.size();
+            for (int i = 0; i < width - instr_size; ++i) {
                 instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
                 instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
-                acceptable_width = i + 1;
             }
         }
 
-        else if((acceptableIssueQueueRegisterWidth < width) && !instructionsVector->empty()) {
             for (int i = 0; i < instruction.size(); ++i) {
                 instruction.at(i).DispatchCycle++; // get the first instruction from the file
             }
-        }
+
     }
 };
 #endif //SUPERSCALAR_DISPATCH_H

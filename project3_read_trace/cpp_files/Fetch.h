@@ -26,25 +26,20 @@ public:
 
 
 
-    void execute(vector<Instruction> *instructionsVector, int acceptableDecodeRegisterWidth) {
-        if(instructionsVector->empty() || (acceptableDecodeRegisterWidth == 0)){
-            // Do Nothing
-        }
-
+    void execute(vector<Instruction> *instructionsVector) {
         // Move the Insrtuctions Forward to the next Stage
-        else if((acceptableDecodeRegisterWidth == width) && !instructionsVector->empty()) {
-            for (int i = 0; i < acceptableDecodeRegisterWidth; ++i) {
-                instructionsVector->at(0).fetchCycle++;
+         if(!instructionsVector->empty()) {
+             int instr_size = instruction.size();
+            for (int i = 0; i < width - instr_size; ++i) {
                 instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
                 instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
             }
         }
         //Stall the instructions.
-        else if((acceptableDecodeRegisterWidth < width) && !instructionsVector->empty()) {
             for (int i = 0; i < instruction.size(); ++i) {
                 instruction.at(i).fetchCycle++; // get the first instruction from the file
             }
-        }
+
     }
 };
 

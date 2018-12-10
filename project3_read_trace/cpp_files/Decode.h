@@ -23,24 +23,18 @@ public:
         Decode::acceptable_width = acceptable_width;
     }
 
-    void execute(vector<Instruction> *instructionsVector, int acceptableRenameRegisterWidth) {
-        if(instructionsVector->empty() || (acceptableRenameRegisterWidth == 0)){
-            // Do Nothing
-        }
-
-        else if((acceptableRenameRegisterWidth == width) && !instructionsVector->empty()) {
-            for (int i = 0; i < acceptableRenameRegisterWidth; ++i) {
-                instructionsVector->at(0).decodeCycle++;
-                instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
+    void execute(vector<Instruction> *instructionsVector) {
+         if(!instructionsVector->empty()) {
+             int instr_size = instruction.size();
+             for (int i = 0; i < width - instr_size; ++i) {
+                 instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
                 instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
-                acceptable_width = i + 1;
             }
         }
-        else if((acceptableRenameRegisterWidth < width) && !instructionsVector->empty()) {
             for (int i = 0; i < instruction.size(); ++i) {
                 instruction.at(i).decodeCycle++; // get the first instruction from the file
             }
-        }
+
     }
 };
 #endif //SUPERSCALAR_DECODE_H

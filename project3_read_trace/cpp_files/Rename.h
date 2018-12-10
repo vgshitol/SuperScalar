@@ -25,21 +25,18 @@ public:
         Rename::acceptable_width = acceptable_width;
     }
 
-    void execute(vector<Instruction> *instructionsVector, int acceptableRegisterReadRegisterWidth, vector<RMT> * rmt, vector<ReorderBuffer> * rob, int rob_size) {
-        if(instructionsVector->empty() || (acceptableRegisterReadRegisterWidth == 0)){
-            // Do Nothing
-        }
+    void execute(vector<Instruction> *instructionsVector, vector<RMT> * rmt, vector<ReorderBuffer> * rob, int rob_size) {
 
-        else if((acceptableRegisterReadRegisterWidth == width) && !instructionsVector->empty()) {
-            for (int i = 0; i < acceptableRegisterReadRegisterWidth; ++i) {
-                instructionsVector->at(0).renameCycle++;
+        if(!instructionsVector->empty()) {
+            int process_width = width - instruction.size();
+            int instr_size = instruction.size();
+            for (int i = 0; i < width - instr_size; ++i) {
                 instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
                 instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
-                acceptable_width = i + 1;
             }
 
             // Process the instructions in the Rename Stage.
-            for (int j = 0; j < instruction.size() ; ++j) {
+            for (int j = process_width; j < instruction.size(); ++j) {
                 if (instruction.at(j).rs1 != -1) {
                     // if renaming is to be done from Reorder Buffer
                     if (rmt->at(instruction.at(j).rs1).valid) {
@@ -86,11 +83,11 @@ public:
 
             }
         }
-        else if((acceptableRegisterReadRegisterWidth < width) && !instructionsVector->empty()) {
+
             for (int i = 0; i < instruction.size(); ++i) {
                 instruction.at(i).renameCycle++; // get the first instruction from the file
             }
-        }
+
 
     }
 };

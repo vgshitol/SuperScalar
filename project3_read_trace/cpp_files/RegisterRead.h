@@ -6,6 +6,7 @@
 #define SUPERSCALAR_REGISTERREAD_H
 #include "vector"
 #include "Instruction.h"
+#include "ReorderBuffer.h"
 
 using namespace std;
 
@@ -23,22 +24,28 @@ public:
         RegisterRead::acceptable_width = acceptable_width;
     }
 
-    void execute(vector<Instruction> *instructionsVector, int acceptableDispatchRegisterWidth) {
+    void execute(vector<Instruction> *instructionsVector, vector<ReorderBuffer> *rob) {
 
-        if((acceptableDispatchRegisterWidth == width) && !instructionsVector->empty()) {
-            for (int i = 0; i < acceptableDispatchRegisterWidth; ++i) {
-                instructionsVector->at(0).registerReadCycle++;
-                instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
+        if(!instructionsVector->empty()) {
+            int instr_size = instruction.size();
+            for (int i = 0; i < width - instr_size; ++i) {
+                // Get the readiness from rob
+                Instruction temp_instruction = instructionsVector->at(0);
+
+                for (int j = 0; j < rob->size() ; ++j) {
+                    if(rob->at(j).dest == temp_instruction.rs1) temp_instruction.rs1_ready = rob->at(j).ready;
+                    if(rob->at(j).dest == temp_instruction.rs2) temp_instruction.rs2_ready = rob->at(j).ready;
+                }
+
+                instruction.push_back(temp_instruction); // get the first instruction from the file
                 instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
-                acceptable_width = i + 1;
             }
         }
 
-        else if((acceptableDispatchRegisterWidth < width) && !instructionsVector->empty()) {
             for (int i = 0; i < instruction.size(); ++i) {
                 instruction.at(i).registerReadCycle++; // get the first instruction from the file
             }
-        }
+
     }
 };
 #endif //SUPERSCALAR_REGISTERREAD_H

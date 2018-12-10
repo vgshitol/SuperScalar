@@ -6,6 +6,7 @@
 #define SUPERSCALAR_WRITEBACK_H
 #include "vector"
 #include "Instruction.h"
+#include "ReorderBuffer.h"
 
 using namespace std;
 
@@ -23,16 +24,47 @@ public:
         Writeback::acceptable_width = acceptable_width;
     }
 
-    void execute(vector<Instruction> *instructionsVector) {
+    void execute(vector<Instruction> *instructionsVector,
+            vector<Instruction> *issueQueueInstructions, vector<Instruction> *dispatchInstructions,
+            vector<Instruction> *registerReadInstructions, vector<ReorderBuffer> * rob) {
 
         if(!instructionsVector->empty()) {
             int i = 0;
-            while (i < width - instruction.size()) {
+            int skipped_count = 0;
+            int instr_size = instruction.size();
+            while ((i < width - instr_size) && !instructionsVector->empty()) {
+                Instruction temp_instruction = instructionsVector->at(i);
+
                 if (((instructionsVector->at(i).ExecuteCycle == 5) && (instructionsVector->at(i).op_code == 2))
                 ||((instructionsVector->at(i).ExecuteCycle == 2) && (instructionsVector->at(i).op_code == 1))
                 ||((instructionsVector->at(i).ExecuteCycle == 1) && (instructionsVector->at(i).op_code == 0))){
-                    instruction.push_back(instructionsVector->at(i)); // get the first instruction from the file
-                    instructionsVector->erase(instructionsVector->begin() + i); // erase the first instruction from the file
+                    // process instruction, wake up the ready bits from everywhere. Execution, IssueQueue, RegisterRead, ROB
+                    for (int j = 0; j < instructionsVector->size() ; ++j) {
+                            if(instructionsVector->at(j).rs1 == temp_instruction.dest) instructionsVector->at(j).rs1_ready = true;
+                            if(instructionsVector->at(j).rs2 == temp_instruction.dest) instructionsVector->at(j).rs2_ready = true;
+                    }
+                    for (int j = 0; j < issueQueueInstructions->size() ; ++j) {
+                            if(issueQueueInstructions->at(j).rs1 == temp_instruction.dest) issueQueueInstructions->at(j).rs1_ready = true;
+                            if(issueQueueInstructions->at(j).rs2 == temp_instruction.dest) issueQueueInstructions->at(j).rs2_ready = true;
+                    }
+                    for (int j = 0; j < dispatchInstructions->size() ; ++j) {
+                            if(dispatchInstructions->at(j).rs1 == temp_instruction.dest) dispatchInstructions->at(j).rs1_ready = true;
+                            if(dispatchInstructions->at(j).rs2 == temp_instruction.dest) dispatchInstructions->at(j).rs2_ready = true;
+                    }
+                    for (int j = 0; j < registerReadInstructions->size() ; ++j) {
+                            if(registerReadInstructions->at(j).rs1 == temp_instruction.dest) registerReadInstructions->at(j).rs1_ready = true;
+                            if(registerReadInstructions->at(j).rs2 == temp_instruction.dest) registerReadInstructions->at(j).rs2_ready = true;
+                    }
+                    for (int j = 0; j < rob->size() ; ++j) {
+                            if(rob->at(j).dest == temp_instruction.dest) rob->at(j).ready = true;
+                    }
+
+                    instruction.push_back(temp_instruction); // get the first instruction from the file
+                    instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
+                }else {
+                    instructionsVector->push_back(temp_instruction); // put the first instruction from the file to the last
+                    instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
+                    skipped_count++;
                 }
                 i++;
             }
