@@ -25,14 +25,14 @@ public:
         Retire::acceptable_width = acceptable_width;
     }
 
-    void execute(vector<Instruction> *instructionsVector, vector<ReorderBuffer> * rob) {
+    void execute(vector<Instruction> *instructionsVector, vector<ReorderBuffer> * rob,
+            vector<Instruction> *executeInstructions, vector<Instruction> *issueQueueInstructions,
+            vector<Instruction> *dispatchInstructions, vector<Instruction> *registerReadInstructions,
+            vector<Instruction> * renameInstructions) {
 
-        int i = 0;
         while (!instructionsVector->empty()) {
                 instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
                 instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
-                i++;
-
         }
 
         // Retire Register has some instructions that are stalled
@@ -45,27 +45,106 @@ public:
             int count = 0;
             while (!instruction.empty() && (rob->at(instruction.at(0).dest - 100).ready == 1) && (count < width)){
                   Instruction temp_instruction = instruction.at(0);
-                          instruction.pop_back();
                // 0 fu{0} src{29,14} dst{-1} FE{0,1} DE{1,1} RN{2,1} RR{3,1} DI{4,1} IS{5,1} EX{6,1} WB{7,1} RT{8,1}
-                cout << "0 ";
+               unsigned long decodeTime = temp_instruction.fetchCycle + temp_instruction.instructionNumber;
+               unsigned long renameTime = temp_instruction.decodeCycle + decodeTime;
+               unsigned long rrTime = temp_instruction.renameCycle + renameTime;
+               unsigned long diTime = temp_instruction.registerReadCycle + rrTime;
+               unsigned long iqTime = temp_instruction.DispatchCycle + diTime;
+               unsigned long exTime = temp_instruction.IssueQueueCycle + iqTime;
+               unsigned long wbTime = temp_instruction.ExecuteCycle + exTime;
+               unsigned long rtTime = temp_instruction.WriteBackCycle + wbTime;
+                cout << temp_instruction.instructionNumber << " ";
                 cout << "fu{ " << temp_instruction.op_code << "} ";
                 cout << "src{ " << temp_instruction.rs1 << "," << temp_instruction.rs2 << "} ";
-                cout << "dst{ " << temp_instruction.dest << "} ";
-                cout << "FE{0," << temp_instruction.fetchCycle << "} ";
-                cout << "DE{1," << temp_instruction.decodeCycle << "} ";
-                cout << "RN{2," << temp_instruction.renameCycle << "} ";
-                cout << "RR{3," << temp_instruction.registerReadCycle << "} ";
-                cout << "DI{4," << temp_instruction.DispatchCycle << "} ";
-                cout << "IS{5," << temp_instruction.IssueQueueCycle << "} ";
-                cout << "EX{6," << temp_instruction.ExecuteCycle << "} ";
-                cout << "WB{7," << temp_instruction.WriteBackCycle << "} ";
-                cout << "RT{8," << temp_instruction.RetireCycle << "} ";
+                cout << "dst{ " << rob->at(temp_instruction.dest - 100).dest << "} ";
+                cout << "FE{" << temp_instruction.instructionNumber << "," << temp_instruction.fetchCycle << "} ";
+                cout << "DE{" << decodeTime <<"," << temp_instruction.decodeCycle << "} ";
+                cout << "RN{"<< renameTime <<"," << temp_instruction.renameCycle << "} ";
+                cout << "RR{"<< rrTime <<"," << temp_instruction.registerReadCycle << "} ";
+                cout << "DI{"<< diTime <<"," << temp_instruction.DispatchCycle << "} ";
+                cout << "IS{"<< iqTime <<"," << temp_instruction.IssueQueueCycle << "} ";
+                cout << "EX{"<< exTime <<"," << temp_instruction.ExecuteCycle << "} ";
+                cout << "WB{"<< wbTime <<"," << temp_instruction.WriteBackCycle << "} ";
+                cout << "RT{"<< rtTime <<"," << temp_instruction.RetireCycle << "} ";
 
                 cout << endl;
 
+                // Go to each place from rename to rob and change the rob index to be erased to its actual name. rs1 and rs2 to be updated.
+                for (int j = 0; j < executeInstructions->size(); ++j) {
+                    for (int k = 0; k < rob->size(); ++k) {
+                        if(executeInstructions->at(j).rs1 == k + 100) {
+                            executeInstructions->at(j).rs1--;
+                        }
+                        if(executeInstructions->at(j).rs2 == k + 100) {
+                            executeInstructions->at(j).rs2--;
+                        }
+                        if(executeInstructions->at(j).dest == k + 100) {
+                            executeInstructions->at(j).dest--;
+                        }
+                    }
+                }
+
+                for (int j = 0; j < issueQueueInstructions->size(); ++j) {
+                    for (int k = 0; k < rob->size(); ++k) {
+                        if(issueQueueInstructions->at(j).rs1 == k + 100) {
+                            issueQueueInstructions->at(j).rs1--;
+                        }
+                        if(issueQueueInstructions->at(j).rs2 == k + 100) {
+                            issueQueueInstructions->at(j).rs2--;
+                        }
+                        if(issueQueueInstructions->at(j).dest == k + 100) {
+                            issueQueueInstructions->at(j).dest--;
+                        }
+                    }
+                }
+
+                for (int j = 0; j < dispatchInstructions->size(); ++j) {
+                    for (int k = 0; k < rob->size(); ++k) {
+                        if(dispatchInstructions->at(j).rs1 == k + 100) {
+                            dispatchInstructions->at(j).rs1--;
+                        }
+                        if(dispatchInstructions->at(j).rs2 == k + 100) {
+                            dispatchInstructions->at(j).rs2--;
+                        }
+                        if(dispatchInstructions->at(j).dest == k + 100) {
+                            dispatchInstructions->at(j).dest--;
+                        }
+                    }
+                }
+
+                for (int j = 0; j < registerReadInstructions->size(); ++j) {
+                    for (int k = 0; k < rob->size(); ++k) {
+                        if(registerReadInstructions->at(j).rs1 == k + 100) {
+                            registerReadInstructions->at(j).rs1--;
+                        }
+                        if(registerReadInstructions->at(j).rs2 == k + 100) {
+                            registerReadInstructions->at(j).rs2--;
+                        }
+                        if(registerReadInstructions->at(j).dest == k + 100) {
+                            registerReadInstructions->at(j).dest--;
+                        }
+                    }
+                }
+
+                for (int j = 0; j < renameInstructions->size(); ++j) {
+                    for (int k = 0; k < rob->size(); ++k) {
+                        if(renameInstructions->at(j).rs1 == k + 100) {
+                            renameInstructions->at(j).rs1--;
+                        }
+                        if(renameInstructions->at(j).rs2 == k + 100) {
+                            renameInstructions->at(j).rs2--;
+                        }
+                        if(renameInstructions->at(j).dest == k + 100) {
+                            renameInstructions->at(j).dest--;
+                        }
+                    }
+                }
 
 
-                  count++;
+                instruction.erase(instruction.begin());
+                rob->erase(rob->begin());
+                count++;
             }
         }
 

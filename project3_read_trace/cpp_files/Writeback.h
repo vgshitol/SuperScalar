@@ -40,24 +40,56 @@ public:
                 ||((instructionsVector->at(0).ExecuteCycle == 2) && (instructionsVector->at(0).op_code == 1))
                 ||((instructionsVector->at(0).ExecuteCycle == 1) && (instructionsVector->at(0).op_code == 0))){
                     // process instruction, wake up the ready bits from everywhere. Execution, IssueQueue, RegisterRead, ROB
-                    for (int j = 0; j < instructionsVector->size() ; ++j) {
-                            if(instructionsVector->at(j).rs1 == temp_instruction.dest) instructionsVector->at(j).rs1_ready = true;
-                            if(instructionsVector->at(j).rs2 == temp_instruction.dest) instructionsVector->at(j).rs2_ready = true;
-                    }
-                    for (int j = 0; j < issueQueueInstructions->size() ; ++j) {
-                            if(issueQueueInstructions->at(j).rs1 == temp_instruction.dest) issueQueueInstructions->at(j).rs1_ready = true;
-                            if(issueQueueInstructions->at(j).rs2 == temp_instruction.dest) issueQueueInstructions->at(j).rs2_ready = true;
-                    }
-                    for (int j = 0; j < dispatchInstructions->size() ; ++j) {
-                            if(dispatchInstructions->at(j).rs1 == temp_instruction.dest) dispatchInstructions->at(j).rs1_ready = true;
-                            if(dispatchInstructions->at(j).rs2 == temp_instruction.dest) dispatchInstructions->at(j).rs2_ready = true;
-                    }
-                    for (int j = 0; j < registerReadInstructions->size() ; ++j) {
-                            if(registerReadInstructions->at(j).rs1 == temp_instruction.dest) registerReadInstructions->at(j).rs1_ready = true;
-                            if(registerReadInstructions->at(j).rs2 == temp_instruction.dest) registerReadInstructions->at(j).rs2_ready = true;
+                    int destreg;
+                    if(temp_instruction.dest >= 100 ) {
+                        rob->at(temp_instruction.dest - 100).ready = true; // find rob tag in rob
+                       destreg = rob->at(temp_instruction.dest - 100).dest;
+                    } else {
+                        destreg = temp_instruction.dest;
                     }
 
-                    rob->at(temp_instruction.dest - 100).ready = true; // find rob tag in rob
+
+                    for (int j = 0; j < instructionsVector->size() ; ++j) {
+                            if(instructionsVector->at(j).rs1 == temp_instruction.dest) {
+                                instructionsVector->at(j).rs1_ready = true;
+                                instructionsVector->at(j).rs1 = destreg;
+                            }
+                            if(instructionsVector->at(j).rs2 == temp_instruction.dest) {
+                                instructionsVector->at(j).rs2 = destreg;
+                                instructionsVector->at(j).rs2_ready = true;
+                            }
+                    }
+                    for (int j = 0; j < issueQueueInstructions->size() ; ++j) {
+                            if(issueQueueInstructions->at(j).rs1 == temp_instruction.dest) {
+                                issueQueueInstructions->at(j).rs1 = destreg;
+                                issueQueueInstructions->at(j).rs1_ready = true;
+                            }
+                            if(issueQueueInstructions->at(j).rs2 == temp_instruction.dest) {
+                                issueQueueInstructions->at(j).rs2 = destreg;
+                                issueQueueInstructions->at(j).rs2_ready = true;
+                            }
+                    }
+                    for (int j = 0; j < dispatchInstructions->size() ; ++j) {
+                            if(dispatchInstructions->at(j).rs1 == temp_instruction.dest) {
+                                dispatchInstructions->at(j).rs1 = destreg;
+                                dispatchInstructions->at(j).rs1_ready = true;
+                            }
+                            if(dispatchInstructions->at(j).rs2 == temp_instruction.dest) {
+                                dispatchInstructions->at(j).rs2 = destreg;
+                                dispatchInstructions->at(j).rs2_ready = true;
+                            }
+                    }
+                    for (int j = 0; j < registerReadInstructions->size() ; ++j) {
+                            if(registerReadInstructions->at(j).rs1 == temp_instruction.dest) {
+                                registerReadInstructions->at(j).rs1 = destreg;
+                                registerReadInstructions->at(j).rs1_ready = true;
+                            }
+                            if(registerReadInstructions->at(j).rs2 == temp_instruction.dest) {
+                                registerReadInstructions->at(j).rs2 = destreg;
+                                registerReadInstructions->at(j).rs2_ready = true;
+                            }
+                    }
+
 
 
                     instruction.push_back(temp_instruction); // get the first instruction from the file

@@ -5,20 +5,9 @@
 #ifndef SUPERSCALAR_INSTRUCTION_H
 #define SUPERSCALAR_INSTRUCTION_H
 
-typedef enum InstructionStage{
-    FETCH,
-    DECODE,
-    RENAME,
-    REGISTER_READ,
-    DISPATCH,
-    ISSUE_QUEUE,
-    EXECUTE,
-    WRITEBACK,
-    RETIRE
-}stage;
-
 class Instruction{
 public:
+    unsigned long int instructionNumber;
     unsigned long int pc;
     int op_code;
     int dest;
@@ -28,8 +17,6 @@ public:
     bool rs2_ready;
     bool issue_valid;
 
-    int timingCounter;
-    stage currentStage;
     int fetchCycle;
     int decodeCycle;
     int renameCycle;
@@ -40,7 +27,9 @@ public:
     int WriteBackCycle;
     int RetireCycle;
 
-    void setInstructionParameters(unsigned long pc, int op_code, int dest, int src1, int src2, bool rs1_ready = true, bool rs2_ready = true){
+    void setInstructionParameters(unsigned long pc, int op_code, int dest, int src1, int src2, bool rs1_ready = true,
+            bool rs2_ready = true, unsigned long int instructionNumber = 0 ){
+
         this->pc = pc;
         this->op_code = op_code;
         this->dest = dest;
@@ -57,6 +46,8 @@ public:
         this->RetireCycle = 0;
         this->rs1_ready = rs1_ready;
         this->rs2_ready = rs2_ready;
+        this->instructionNumber = instructionNumber;
+
    }
 };
 #endif //SUPERSCALAR_INSTRUCTION_H

@@ -12,23 +12,16 @@ public:
     bool exc;
     bool miss;
     unsigned long pc;
+    int robTag;
 
 public:
-    ReorderBuffer(int dest = -1, unsigned long pc = 0, bool ready = false, bool exc = false, bool miss = false ){
+    ReorderBuffer( int dest = -1, unsigned long pc = 0, bool ready = false, bool exc = false, bool miss = false ,int robTag = 0){
         this->dest = dest;
         this->ready = ready;
         this->exc = exc;
         this->miss = miss;
         this->pc = pc;
-    }
-
-
-    void makeEntry(int dest = -1, unsigned long pc = 0, bool ready = false, bool exc = false, bool miss = false){
-        this->dest = dest;
-        this->ready = ready;
-        this->exc = exc;
-        this->miss = miss;
-        this->pc = pc;
+        this->robTag = robTag;
     }
 };
 

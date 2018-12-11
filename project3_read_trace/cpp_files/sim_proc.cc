@@ -71,13 +71,15 @@ int main (int argc, char* argv[])
     superScalar.setAcceptable_width(4);
     bool pipelineComplete = false;
 
+    unsigned long int instruction_number = 0;
     do{
 
         switch (currentState){
             case GET_INSTRUCTION_FROM_FILE:{
                 fileReturn = fscanf(FP, "%lx %d %d %d %d", &pc, &op_type, &dest, &src1, &src2);
                 instruction_counter++;
-                if(instruction_counter >= superScalar.getAcceptable_width()){
+                int acceptableWidth = superScalar.getAcceptable_width();
+                if(instruction_counter >= acceptableWidth){
                     instruction_counter = 0;
                     nextstate = PROCESS_PIPELINE;
 
@@ -86,15 +88,16 @@ int main (int argc, char* argv[])
                 }
 
                 if(fileReturn != EOF){
-                    superScalar.setInstructions(pc, op_type, dest, src1, src2, width_counter);
+                    superScalar.setInstructions(pc, op_type, dest, src1, src2, width_counter, instruction_number);
                     superScalar.endOfInstructions(false);
                 }
 
                 if(fileReturn == EOF){
                     superScalar.endOfInstructions(true);
                 }
+                instruction_number++;
 
-                printf("%lx %d %d %d %d\n", pc, op_type, dest, src1, src2); //Print to check if inputs have been read correctly
+                //     printf("%lx %d %d %d %d\n", pc, op_type, dest, src1, src2); //Print to check if inputs have been read correctly
             }
             break;
             case PROCESS_PIPELINE: {

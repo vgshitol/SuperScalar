@@ -87,9 +87,9 @@ public:
         this->retireStage.setAcceptable_width(width);
     }
 
-    void setInstructions(unsigned long pc, int op_code, int dest, int src1, int src2, int width_counter) {
+    void setInstructions(unsigned long pc, int op_code, int dest, int src1, int src2, int width_counter, unsigned long int instruction_number) {
         Instruction temp_instr;
-        temp_instr.setInstructionParameters(pc,  op_code,  dest,  src1,  src2);
+        temp_instr.setInstructionParameters(pc,  op_code,  dest,  src1,  src2, true, true,instruction_number);
         instruction.push_back(temp_instr);
     }
 
@@ -104,7 +104,8 @@ public:
     bool architectureStages(void){
 
         retireStage.setAcceptable_width(width);
-        retireStage.execute(&writebackStage.instruction, &rob);
+        retireStage.execute(&writebackStage.instruction, &rob, &executeStage.instruction, &issueQueueStage.instruction,
+                &dispatchStage.instruction, &registerReadStage.instruction, &renameStage.instruction);
         writebackStage.execute(&executeStage.instruction, &issueQueueStage.instruction, &dispatchStage.instruction,
                 &registerReadStage.instruction, &rob);
         executeStage.execute(&issueQueueStage.instruction);
@@ -114,6 +115,7 @@ public:
         renameStage.execute(&decodeStage.instruction, &rmt, &rob, rob_size);
         decodeStage.execute(&fetchStage.instruction);
         fetchStage.execute(&instruction); //4 - acceptable width from decode.
+        setAcceptable_width(width - instruction.size());
 
         return eofFlag;
     }
