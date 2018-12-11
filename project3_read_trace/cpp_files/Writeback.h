@@ -32,12 +32,13 @@ public:
             int i = 0;
             int skipped_count = 0;
             int instr_size = instruction.size();
-            while ((i < width - instr_size) && !instructionsVector->empty()) {
-                Instruction temp_instruction = instructionsVector->at(i);
+            int executeInstrSize = instructionsVector->size();
+            while ((i < min((width - instr_size), executeInstrSize)) && !instructionsVector->empty()) {
+                Instruction temp_instruction = instructionsVector->at(0);
 
-                if (((instructionsVector->at(i).ExecuteCycle == 5) && (instructionsVector->at(i).op_code == 2))
-                ||((instructionsVector->at(i).ExecuteCycle == 2) && (instructionsVector->at(i).op_code == 1))
-                ||((instructionsVector->at(i).ExecuteCycle == 1) && (instructionsVector->at(i).op_code == 0))){
+                if (((instructionsVector->at(0).ExecuteCycle == 5) && (instructionsVector->at(0).op_code == 2))
+                ||((instructionsVector->at(0).ExecuteCycle == 2) && (instructionsVector->at(0).op_code == 1))
+                ||((instructionsVector->at(0).ExecuteCycle == 1) && (instructionsVector->at(0).op_code == 0))){
                     // process instruction, wake up the ready bits from everywhere. Execution, IssueQueue, RegisterRead, ROB
                     for (int j = 0; j < instructionsVector->size() ; ++j) {
                             if(instructionsVector->at(j).rs1 == temp_instruction.dest) instructionsVector->at(j).rs1_ready = true;
@@ -55,13 +56,14 @@ public:
                             if(registerReadInstructions->at(j).rs1 == temp_instruction.dest) registerReadInstructions->at(j).rs1_ready = true;
                             if(registerReadInstructions->at(j).rs2 == temp_instruction.dest) registerReadInstructions->at(j).rs2_ready = true;
                     }
-                    for (int j = 0; j < rob->size() ; ++j) {
-                            if(rob->at(j).dest == temp_instruction.dest) rob->at(j).ready = true;
-                    }
+
+                    rob->at(temp_instruction.dest - 100).ready = true; // find rob tag in rob
+
 
                     instruction.push_back(temp_instruction); // get the first instruction from the file
                     instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
-                }else {
+
+                } else {
                     instructionsVector->push_back(temp_instruction); // put the first instruction from the file to the last
                     instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
                     skipped_count++;

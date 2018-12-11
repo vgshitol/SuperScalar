@@ -33,8 +33,8 @@ public:
                 Instruction temp_instruction = instructionsVector->at(0);
 
                 for (int j = 0; j < rob->size() ; ++j) {
-                    if(rob->at(j).dest == temp_instruction.rs1) temp_instruction.rs1_ready = rob->at(j).ready;
-                    if(rob->at(j).dest == temp_instruction.rs2) temp_instruction.rs2_ready = rob->at(j).ready;
+                    if(rob->at(j).dest == temp_instruction.rs1 - 100) temp_instruction.rs1_ready = rob->at(j).ready;
+                    if(rob->at(j).dest == temp_instruction.rs2 - 100) temp_instruction.rs2_ready = rob->at(j).ready;
                 }
 
                 instruction.push_back(temp_instruction); // get the first instruction from the file

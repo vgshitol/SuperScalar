@@ -103,7 +103,7 @@ public:
 
     bool architectureStages(void){
 
-        retireStage.setAcceptable_width(width*5);
+        retireStage.setAcceptable_width(width);
         retireStage.execute(&writebackStage.instruction, &rob);
         writebackStage.execute(&executeStage.instruction, &issueQueueStage.instruction, &dispatchStage.instruction,
                 &registerReadStage.instruction, &rob);

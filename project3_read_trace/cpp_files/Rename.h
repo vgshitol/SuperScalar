@@ -31,56 +31,58 @@ public:
             int process_width = width - instruction.size();
             int instr_size = instruction.size();
             for (int i = 0; i < width - instr_size; ++i) {
-                instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
-                instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
-            }
 
-            // Process the instructions in the Rename Stage.
-            for (int j = process_width; j < instruction.size(); ++j) {
-                if (instruction.at(j).rs1 != -1) {
+                Instruction temp_instruction = instructionsVector->at(0);
+
+                // Process the instruction
+                if (temp_instruction.rs1 != -1) {
                     // if renaming is to be done from Reorder Buffer
-                    if (rmt->at(instruction.at(j).rs1).valid) {
+                    if (rmt->at(temp_instruction.rs1).valid) {
                         // assign the register the value in reorder buffer
-                        instruction.at(j).rs1 = rmt->at(instruction.at(j).rs1).rob_tag  + 100;
+                        temp_instruction.rs1 = rmt->at(temp_instruction.rs1).rob_tag  + 100;
 
                     } else {
                         // Do nothing meaning take the value from the ARF register.
                     }
                 }
 
-                if(instruction.at(j).rs2 != -1){
-                    if(rmt->at(instruction.at(j).rs2).valid){
+                if(temp_instruction.rs2 != -1){
+                    if(rmt->at(temp_instruction.rs2).valid){
                         // assign the register the value in reorder buffer
-                        instruction.at(j).rs2 = rmt->at(instruction.at(j).rs2).rob_tag  + 100;
+                        temp_instruction.rs2 = rmt->at(temp_instruction.rs2).rob_tag  + 100;
 
                     } else {
                         // Do nothing meaning take the value from the ARF register.
                     }
                 }
 
-                if(instruction.at(j).dest != -1){
+                if(temp_instruction.dest != -1){
                     // Go to rob table and update the entry there and set its valid bit and assign that value to rmt
-                    ReorderBuffer rob_new(instruction.at(j).dest , instruction.at(j).pc );
+                    ReorderBuffer rob_new(temp_instruction.dest , temp_instruction.pc );
 
                     if(rob->size() < rob_size){
                         rob->push_back(rob_new);
                     }
 
-                    rmt->at(instruction.at(j).dest).valid = true;
-                    rmt->at(instruction.at(j).dest).rob_tag = static_cast<int>(rob->size() - 1);
+                    rmt->at(temp_instruction.dest).valid = true;
+                    rmt->at(temp_instruction.dest).rob_tag = static_cast<int>(rob->size() - 1);
                     // assign the register the value in reorder buffer
 
-                    instruction.at(j).dest = rmt->at(instruction.at(j).dest).rob_tag + 100;
+                    temp_instruction.dest = rmt->at(temp_instruction.dest).rob_tag + 100;
 
                 } else {
                     // Do nothing meaning its an instruction that doesnt need to write.
-                    ReorderBuffer rob_new(instruction.at(j).dest , instruction.at(j).pc );
+                    ReorderBuffer rob_new(temp_instruction.dest , temp_instruction.pc );
 
                     if(rob->size() < rob_size){
                         rob->push_back(rob_new);
                     }
+
+                    temp_instruction.dest = rob->size() - 1 + 100;
                 }
 
+                instruction.push_back(temp_instruction); // get the first instruction from the file
+                instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
             }
         }
 
