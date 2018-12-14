@@ -14,19 +14,10 @@ class Writeback{
 public:
     vector <Instruction> instruction;
     int width;
-    int acceptable_width;
 
-    int getAcceptable_width() const {
-        return acceptable_width;
-    }
-
-    void setAcceptable_width(int acceptable_width) {
-        Writeback::acceptable_width = acceptable_width;
-    }
-
-    void execute(vector<Instruction> *instructionsVector,
-            vector<Instruction> *issueQueueInstructions, vector<Instruction> *dispatchInstructions,
-            vector<Instruction> *registerReadInstructions, vector<ReorderBuffer> * rob) {
+    bool execute(vector<Instruction> *instructionsVector, vector<Instruction> *issueQueueInstructions,
+            vector<Instruction> *dispatchInstructions, vector<Instruction> *registerReadInstructions,
+            vector<Instruction> *renameInstructions, vector<ReorderBuffer> * rob) {
 
         if(!instructionsVector->empty()) {
             int i = 0;
@@ -90,6 +81,17 @@ public:
                             }
                     }
 
+                    for (int j = 0; j < renameInstructions->size() ; ++j) {
+                        if(renameInstructions->at(j).rs1 == temp_instruction.dest) {
+                            renameInstructions->at(j).rs1 = destreg;
+                            renameInstructions->at(j).rs1_ready = true;
+                        }
+                        if(renameInstructions->at(j).rs2 == temp_instruction.dest) {
+                            renameInstructions->at(j).rs2 = destreg;
+                            renameInstructions->at(j).rs2_ready = true;
+                        }
+                    }
+
 
 
                     instruction.push_back(temp_instruction); // get the first instruction from the file
@@ -107,6 +109,8 @@ public:
             for (int i = 0; i < instruction.size(); ++i) {
                 instruction.at(i).WriteBackCycle++; // get the first instruction from the file
             }
+
+        return instruction.empty();
 
     }
 };

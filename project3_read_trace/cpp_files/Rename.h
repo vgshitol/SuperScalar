@@ -15,17 +15,8 @@ class Rename{
 public:
     vector <Instruction> instruction;
     int width;
-    int acceptable_width;
 
-    int getAcceptable_width() const {
-        return acceptable_width;
-    }
-
-    void setAcceptable_width(int acceptable_width) {
-        Rename::acceptable_width = acceptable_width;
-    }
-
-    void execute(vector<Instruction> *instructionsVector, vector<RMT> * rmt, vector<ReorderBuffer> * rob, int rob_size) {
+    bool execute(vector<Instruction> *instructionsVector, vector<RMT> * rmt, vector<ReorderBuffer> * rob, int rob_size) {
 
         if(!instructionsVector->empty()) {
             int process_width = width - instruction.size();
@@ -90,7 +81,7 @@ public:
                 instruction.at(i).renameCycle++; // get the first instruction from the file
             }
 
-
+        return instruction.empty();
     }
 };
 

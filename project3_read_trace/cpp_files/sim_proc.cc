@@ -68,7 +68,6 @@ int main (int argc, char* argv[])
     enum stateOfInput nextstate = GET_INSTRUCTION_FROM_FILE;
 
     int instruction_counter = 0;
-    superScalar.setAcceptable_width(4);
     bool pipelineComplete = false;
 
     unsigned long int instruction_number = 0;
@@ -78,7 +77,7 @@ int main (int argc, char* argv[])
             case GET_INSTRUCTION_FROM_FILE:{
                 fileReturn = fscanf(FP, "%lx %d %d %d %d", &pc, &op_type, &dest, &src1, &src2);
                 instruction_counter++;
-                int acceptableWidth = superScalar.getAcceptable_width();
+                int acceptableWidth = superScalar.getAcceptableWidth();
                 if(instruction_counter >= acceptableWidth){
                     instruction_counter = 0;
                     nextstate = PROCESS_PIPELINE;
@@ -105,7 +104,9 @@ int main (int argc, char* argv[])
                 if(pipelineComplete)nextstate = DONE;
                 else nextstate = GET_INSTRUCTION_FROM_FILE;
             }
+                break;
             case DONE:{
+
             }
             default: {
             }
@@ -116,6 +117,8 @@ int main (int argc, char* argv[])
 
 
     }while (currentState != DONE);
+
+    superScalar.DisplayFinishedInstructions();
 
     return 0;
 }

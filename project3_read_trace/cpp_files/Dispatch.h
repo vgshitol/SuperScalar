@@ -13,17 +13,8 @@ class Dispatch{
 public:
     vector <Instruction> instruction;
     int width;
-    int acceptable_width;
 
-    int getAcceptable_width() const {
-        return acceptable_width;
-    }
-
-    void setAcceptable_width(int acceptable_width) {
-        Dispatch::acceptable_width = acceptable_width;
-    }
-
-    void execute(vector<Instruction> *instructionsVector) {
+    bool execute(vector<Instruction> *instructionsVector) {
 
         if(!instructionsVector->empty()) {
             int instr_size = instruction.size();
@@ -36,7 +27,7 @@ public:
             for (int i = 0; i < instruction.size(); ++i) {
                 instruction.at(i).DispatchCycle++; // get the first instruction from the file
             }
-
+        return instruction.empty();
     }
 };
 #endif //SUPERSCALAR_DISPATCH_H

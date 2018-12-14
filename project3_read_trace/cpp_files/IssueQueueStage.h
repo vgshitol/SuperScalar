@@ -14,17 +14,8 @@ class IssueQueueStage{
 public:
     vector <Instruction> instruction;
     int width;
-    int acceptable_width;
 
-    int getAcceptable_width() const {
-        return acceptable_width;
-    }
-
-    void setAcceptable_width(int acceptable_width) {
-        IssueQueueStage::acceptable_width = acceptable_width;
-    }
-
-    void execute(vector<Instruction> *instructionsVector, int dispatch_width) {
+    bool execute(vector<Instruction> *instructionsVector, int dispatch_width) {
 
         if((width - instruction.size() >= dispatch_width) && !instructionsVector->empty()) {
             for (int i = 0; i < dispatch_width; ++i) {
@@ -42,6 +33,8 @@ public:
             for (int i = 0; i < instruction.size(); ++i) {
                 instruction.at(i).IssueQueueCycle++; // get the first instruction from the file
             }
+
+        return instruction.empty();
     }
 };
 #endif //SUPERSCALAR_ISSUEQUEUESTAGE_H

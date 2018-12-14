@@ -14,17 +14,8 @@ class RegisterRead{
 public:
     vector <Instruction> instruction;
     int width;
-    int acceptable_width;
 
-    int getAcceptable_width() const {
-        return acceptable_width;
-    }
-
-    void setAcceptable_width(int acceptable_width) {
-        RegisterRead::acceptable_width = acceptable_width;
-    }
-
-    void execute(vector<Instruction> *instructionsVector, vector<ReorderBuffer> *rob) {
+    bool execute(vector<Instruction> *instructionsVector, vector<ReorderBuffer> *rob) {
 
         if(!instructionsVector->empty()) {
             int instr_size = instruction.size();
@@ -33,8 +24,8 @@ public:
                 Instruction temp_instruction = instructionsVector->at(0);
 
                 for (int j = 0; j < rob->size() ; ++j) {
-                    if(rob->at(j).dest == temp_instruction.rs1 - 100) temp_instruction.rs1_ready = rob->at(j).ready;
-                    if(rob->at(j).dest == temp_instruction.rs2 - 100) temp_instruction.rs2_ready = rob->at(j).ready;
+                    if(j == temp_instruction.rs1 - 100) temp_instruction.rs1_ready = rob->at(j).ready;
+                    if(j == temp_instruction.rs2 - 100) temp_instruction.rs2_ready = rob->at(j).ready;
                 }
 
                 instruction.push_back(temp_instruction); // get the first instruction from the file
@@ -45,7 +36,7 @@ public:
             for (int i = 0; i < instruction.size(); ++i) {
                 instruction.at(i).registerReadCycle++; // get the first instruction from the file
             }
-
+        return instruction.empty();
     }
 };
 #endif //SUPERSCALAR_REGISTERREAD_H

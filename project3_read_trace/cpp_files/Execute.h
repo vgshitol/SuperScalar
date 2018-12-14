@@ -13,17 +13,8 @@ class Execute{
 public:
     vector <Instruction> instruction;
     int width;
-    int acceptable_width;
 
-    int getAcceptable_width() const {
-        return acceptable_width;
-    }
-
-    void setAcceptable_width(int acceptable_width) {
-        Execute::acceptable_width = acceptable_width;
-    }
-
-    void execute(vector<Instruction> *instructionsVector) {
+    bool execute(vector<Instruction> *instructionsVector) {
 
         if(!instructionsVector->empty()) {
             int skipped_count = 0;
@@ -61,7 +52,7 @@ public:
                     }
                 }
             }
-
+        return instruction.empty();
     }
 };
 #endif //SUPERSCALAR_EXECUTE_H
