@@ -24,9 +24,9 @@ public:
             }
         }
 
-            for (int i = 0; i < instruction.size(); ++i) {
-                instruction.at(i).DispatchCycle++; // get the first instruction from the file
-            }
+        for (int i = 0; i < instruction.size(); ++i) {
+            instruction.at(i).DispatchCycle++; // get the first instruction from the file
+        }
         return instruction.empty();
     }
 };

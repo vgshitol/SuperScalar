@@ -36,18 +36,19 @@ public:
 
         // Retire Register is not empty and has instructions to retire.
         int retire_count = 0;
-        while (!instruction.empty() && (rob->at(0).ready == 1) && !rob->empty() && retire_count < width) {
-            retire_count++;
-
-            if(rob->at(0).dest != -1){
-                if(rmt->at(rob->at(0).dest).rob_tag == 100) rmt->at(rob->at(0).dest).valid = false;
-            }
+        while (!instruction.empty() && (rob->at(0).ready == 1) && !rob->empty() && (retire_count < width)) {
 
             // find the first instruction that contains the destination in rob 0.
-            for (unsigned long inst_num = 0; inst_num < instruction.size(); ++inst_num) {
+            for (unsigned long inst_num = 0; (inst_num < instruction.size()) && (retire_count < width); inst_num++) {
 
                 if (instruction.at(inst_num).dest == 100) {
                     instruction.at(inst_num).dest = rob->at(0).dest;
+
+                    retire_count++;
+
+                    if(rob->at(0).dest != -1){
+                        if(rmt->at(rob->at(0).dest).rob_tag == 100) rmt->at(rob->at(0).dest).valid = false;
+                    }
 
                     for (int j = 0; j < instruction.size(); ++j) {
                             if(instruction.at(j).rs1 > 100) instruction.at(j).rs1--;
@@ -56,99 +57,69 @@ public:
                             else if(instruction.at(j).rs2 == 100) instruction.at(j).rs2 = rob->at(0).dest;
                             if(instruction.at(j).dest > 100) instruction.at(j).dest--;
                             else if(instruction.at(j).dest == 100) instruction.at(j).dest = rob->at(0).dest;
-
-
                     }
 
                     rob->erase(rob->begin());
-
-
+                    finishedInstruction->push_back(instruction.at(inst_num)); // get the first instruction from the file
+                    instruction.erase(instruction.begin()+ inst_num);
 
                     for (int j = 0; j < executeInstructions->size(); ++j) {
-                        for (int k = 0; k < rob->size(); ++k) {
-                            if(executeInstructions->at(j).rs1 == k + retire_count + 100) {
-                                executeInstructions->at(j).rs1--;
-                            }
-                            if(executeInstructions->at(j).rs2 == k + retire_count + 100) {
-                                executeInstructions->at(j).rs2--;
-                            }
-                            if(executeInstructions->at(j).dest == k + retire_count + 100) {
-                                executeInstructions->at(j).dest--;
-                            }
-                        }
-
+                        if(executeInstructions->at(j).rs1 > 100) executeInstructions->at(j).rs1--;
+                        else if(executeInstructions->at(j).rs1 == 100) executeInstructions->at(j).rs1 = rob->at(0).dest;
+                        if(executeInstructions->at(j).rs2 > 100) executeInstructions->at(j).rs2--;
+                        else if(executeInstructions->at(j).rs2 == 100) executeInstructions->at(j).rs2 = rob->at(0).dest;
+                        if(executeInstructions->at(j).dest > 100) executeInstructions->at(j).dest--;
+                        else if(executeInstructions->at(j).dest == 100) executeInstructions->at(j).dest = rob->at(0).dest;
                     }
 
                     for (int j = 0; j < issueQueueInstructions->size(); ++j) {
-                        for (int k = 0; k < rob->size(); ++k) {
-                            if(issueQueueInstructions->at(j).rs1 == k + retire_count + 100) {
-                                issueQueueInstructions->at(j).rs1--;
-                            }
-                            if(issueQueueInstructions->at(j).rs2 == k + retire_count + 100) {
-                                issueQueueInstructions->at(j).rs2--;
-                            }
-                            if(issueQueueInstructions->at(j).dest == k + retire_count + 100) {
-                                issueQueueInstructions->at(j).dest--;
-                            }
-                        }
+                        if(issueQueueInstructions->at(j).rs1 > 100) issueQueueInstructions->at(j).rs1--;
+                        else if(issueQueueInstructions->at(j).rs1 == 100) issueQueueInstructions->at(j).rs1 = rob->at(0).dest;
+                        if(issueQueueInstructions->at(j).rs2 > 100) issueQueueInstructions->at(j).rs2--;
+                        else if(issueQueueInstructions->at(j).rs2 == 100) issueQueueInstructions->at(j).rs2 = rob->at(0).dest;
+                        if(issueQueueInstructions->at(j).dest > 100) issueQueueInstructions->at(j).dest--;
+                        else if(issueQueueInstructions->at(j).dest == 100) issueQueueInstructions->at(j).dest = rob->at(0).dest;
                     }
 
                     for (int j = 0; j < dispatchInstructions->size(); ++j) {
-                        for (int k = 0; k < rob->size(); ++k) {
-                            if(dispatchInstructions->at(j).rs1 == k + retire_count + 100) {
-                                dispatchInstructions->at(j).rs1--;
-                            }
-                            if(dispatchInstructions->at(j).rs2 == k + retire_count + 100) {
-                                dispatchInstructions->at(j).rs2--;
-                            }
-                            if(dispatchInstructions->at(j).dest == k + retire_count + 100) {
-                                dispatchInstructions->at(j).dest--;
-                            }
-                        }
+                        if(dispatchInstructions->at(j).rs1 > 100) dispatchInstructions->at(j).rs1--;
+                        else if(dispatchInstructions->at(j).rs1 == 100) dispatchInstructions->at(j).rs1 = rob->at(0).dest;
+                        if(dispatchInstructions->at(j).rs2 > 100) dispatchInstructions->at(j).rs2--;
+                        else if(dispatchInstructions->at(j).rs2 == 100) dispatchInstructions->at(j).rs2 = rob->at(0).dest;
+                        if(dispatchInstructions->at(j).dest > 100) dispatchInstructions->at(j).dest--;
+                        else if(dispatchInstructions->at(j).dest == 100) dispatchInstructions->at(j).dest = rob->at(0).dest;
                     }
 
                     for (int j = 0; j < registerReadInstructions->size(); ++j) {
-                        for (int k = 0; k < rob->size(); ++k) {
-                            if(registerReadInstructions->at(j).rs1 == k + retire_count + 100) {
-                                registerReadInstructions->at(j).rs1--;
-                            }
-                            if(registerReadInstructions->at(j).rs2 == k + retire_count + 100) {
-                                registerReadInstructions->at(j).rs2--;
-                            }
-                            if(registerReadInstructions->at(j).dest == k + retire_count + 100) {
-                                registerReadInstructions->at(j).dest--;
-                            }
-                        }
+                        if(registerReadInstructions->at(j).rs1 > 100) registerReadInstructions->at(j).rs1--;
+                        else if(registerReadInstructions->at(j).rs1 == 100) registerReadInstructions->at(j).rs1 = rob->at(0).dest;
+                        if(registerReadInstructions->at(j).rs2 > 100) registerReadInstructions->at(j).rs2--;
+                        else if(registerReadInstructions->at(j).rs2 == 100) registerReadInstructions->at(j).rs2 = rob->at(0).dest;
+                        if(registerReadInstructions->at(j).dest > 100) registerReadInstructions->at(j).dest--;
+                        else if(registerReadInstructions->at(j).dest == 100) registerReadInstructions->at(j).dest = rob->at(0).dest;
                     }
 
                     for (int j = 0; j < renameInstructions->size(); ++j) {
-                        for (int k = 0; k < rob->size(); ++k) {
-                            if(renameInstructions->at(j).rs1 == k + retire_count + 100) {
-                                renameInstructions->at(j).rs1--;
-                            }
-                            if(renameInstructions->at(j).rs2 == k + retire_count + 100) {
-                                renameInstructions->at(j).rs2--;
-                            }
-                            if(renameInstructions->at(j).dest == k + retire_count + 100) {
-                                renameInstructions->at(j).dest--;
-                            }
-                        }
+                        if(renameInstructions->at(j).rs1 > 100) renameInstructions->at(j).rs1--;
+                        else if(renameInstructions->at(j).rs1 == 100) renameInstructions->at(j).rs1 = rob->at(0).dest;
+                        if(renameInstructions->at(j).rs2 > 100) renameInstructions->at(j).rs2--;
+                        else if(renameInstructions->at(j).rs2 == 100) renameInstructions->at(j).rs2 = rob->at(0).dest;
+                        if(renameInstructions->at(j).dest > 100) renameInstructions->at(j).dest--;
+                        else if(renameInstructions->at(j).dest == 100) renameInstructions->at(j).dest = rob->at(0).dest;
                     }
 
                     for (int j = 0; j < rmt->size(); ++j) {
                         for (int k = 0; k < rob->size(); ++k) {
                             if (rob->at(k).dest != -1){
-                                if(rmt->at(rob->at(k).dest).rob_tag  == k + retire_count + 100) {
+                                if(rmt->at(rob->at(k).dest).rob_tag  > 100) {
                                     rmt->at(rob->at(k).dest).rob_tag--;
+                                } else if (rmt->at(rob->at(k).dest).rob_tag  == 100){
+                                    rmt->at(rob->at(k).dest).rob_tag = rob->at(k).dest;
                                 }
                             }
 
                         }
                     }
-
-                    finishedInstruction->push_back(instruction.at(inst_num)); // get the first instruction from the file
-                    instruction.erase(instruction.begin()+ inst_num);
-
                 }
             }
         }

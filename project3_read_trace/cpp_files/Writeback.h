@@ -19,11 +19,12 @@ public:
             vector<Instruction> *dispatchInstructions, vector<Instruction> *registerReadInstructions,
             vector<Instruction> *renameInstructions, vector<ReorderBuffer> * rob) {
 
+#if 1
         if(!instructionsVector->empty()) {
             int i = 0;
             int skipped_count = 0;
             int instr_size = instruction.size();
-            int executeInstrSize = instructionsVector->size();
+            int executeInstrSize = instructionsVector->size(); //
             while ((i < min((width - instr_size), executeInstrSize)) && !instructionsVector->empty()) {
                 Instruction temp_instruction = instructionsVector->at(0);
 
@@ -39,17 +40,6 @@ public:
                         destreg = temp_instruction.dest;
                     }
 
-
-                    for (int j = 0; j < instructionsVector->size() ; ++j) {
-                            if(instructionsVector->at(j).rs1 == temp_instruction.dest) {
-                                instructionsVector->at(j).rs1_ready = true;
-                                instructionsVector->at(j).rs1 = destreg;
-                            }
-                            if(instructionsVector->at(j).rs2 == temp_instruction.dest) {
-                                instructionsVector->at(j).rs2 = destreg;
-                                instructionsVector->at(j).rs2_ready = true;
-                            }
-                    }
                     for (int j = 0; j < issueQueueInstructions->size() ; ++j) {
                             if(issueQueueInstructions->at(j).rs1 == temp_instruction.dest) {
                                 issueQueueInstructions->at(j).rs1 = destreg;
@@ -70,30 +60,17 @@ public:
                                 dispatchInstructions->at(j).rs2_ready = true;
                             }
                     }
+
                     for (int j = 0; j < registerReadInstructions->size() ; ++j) {
-                            if(registerReadInstructions->at(j).rs1 == temp_instruction.dest) {
-                                registerReadInstructions->at(j).rs1 = destreg;
-                                registerReadInstructions->at(j).rs1_ready = true;
-                            }
-                            if(registerReadInstructions->at(j).rs2 == temp_instruction.dest) {
-                                registerReadInstructions->at(j).rs2 = destreg;
-                                registerReadInstructions->at(j).rs2_ready = true;
-                            }
-                    }
-
-                    for (int j = 0; j < renameInstructions->size() ; ++j) {
-                        if(renameInstructions->at(j).rs1 == temp_instruction.dest) {
-                            renameInstructions->at(j).rs1 = destreg;
-                            renameInstructions->at(j).rs1_ready = true;
+                        if(registerReadInstructions->at(j).rs1 == temp_instruction.dest) {
+                            registerReadInstructions->at(j).rs1 = destreg;
+                            registerReadInstructions->at(j).rs1_ready = true;
                         }
-                        if(renameInstructions->at(j).rs2 == temp_instruction.dest) {
-                            renameInstructions->at(j).rs2 = destreg;
-                            renameInstructions->at(j).rs2_ready = true;
+                        if(registerReadInstructions->at(j).rs2 == temp_instruction.dest) {
+                            registerReadInstructions->at(j).rs2 = destreg;
+                            registerReadInstructions->at(j).rs2_ready = true;
                         }
                     }
-
-
-
 
                     instruction.push_back(temp_instruction); // get the first instruction from the file
                     instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
@@ -107,6 +84,7 @@ public:
             }
         }
 
+#endif
             for (int i = 0; i < instruction.size(); ++i) {
                 instruction.at(i).WriteBackCycle++; // get the first instruction from the file
             }

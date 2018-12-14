@@ -6,6 +6,8 @@
 #define SUPERSCALAR_SUPERSCALAR_H
 
 #include <vector>
+#include <math.h>
+#include <algorithm>
 #include "ARF.h"
 #include "RMT.h"
 #include "IssueQueue.h"
@@ -78,8 +80,8 @@ public:
         this->registerReadStage.width = width;
         this->dispatchStage.width = width;
         this->issueQueueStage.width = iq_size;
-        this->executeStage.width = width*3;
-        this->writebackStage.width = width*3;
+        this->executeStage.width = width*5;
+        this->writebackStage.width = width*5;
         this->retireStage.width = width;
 
 
@@ -112,9 +114,9 @@ public:
     }
 
     void DisplayFinishedInstructions(){
-        sortFinishedInstructions();
+    //    sortFinishedInstructions();
         int i = 0;
-        while (!finishedInstruction.empty() && i < finishedInstruction.size()){
+        while (!finishedInstruction.empty()  && i < finishedInstruction.size()){
             Instruction temp_instruction = finishedInstruction.at(i);
 
 
@@ -127,9 +129,9 @@ public:
             unsigned long wbTime = temp_instruction.ExecuteCycle + exTime;
             unsigned long rtTime = temp_instruction.WriteBackCycle + wbTime;
             cout << temp_instruction.instructionNumber << " ";
-            cout << "fu{ " << temp_instruction.op_code << "} ";
-            cout << "src{ " << temp_instruction.rs1 << "," << temp_instruction.rs2 << "} ";
-            cout << "dst{ " << temp_instruction.dest << "} ";
+            cout << "fu{" << temp_instruction.op_code << "} ";
+            cout << "src{" << temp_instruction.rs1 << "," << temp_instruction.rs2 << "} ";
+            cout << "dst{" << temp_instruction.dest << "} ";
             cout << "FE{" << temp_instruction.instructionNumber << "," << temp_instruction.fetchCycle << "} ";
             cout << "DE{" << decodeTime <<"," << temp_instruction.decodeCycle << "} ";
             cout << "RN{"<< renameTime <<"," << temp_instruction.renameCycle << "} ";
@@ -152,14 +154,14 @@ public:
                                  &dispatchStage.instruction, &registerReadStage.instruction, &renameStage.instruction , &finishedInstruction);
         wb = writebackStage.execute(&executeStage.instruction, &issueQueueStage.instruction, &dispatchStage.instruction,
                                     &registerReadStage.instruction, &renameStage.instruction, &rob);
-        ex =  executeStage.execute(&issueQueueStage.instruction);
+        ex =  executeStage.execute(&issueQueueStage.instruction, &dispatchStage.instruction);
         iq = issueQueueStage.execute(&dispatchStage.instruction, dispatchStage.width);
         di =  dispatchStage.execute(&registerReadStage.instruction);
         rr =  registerReadStage.execute(&renameStage.instruction, &rob);
         rn =  renameStage.execute(&decodeStage.instruction, &rmt, &rob, rob_size);
         de = decodeStage.execute(&fetchStage.instruction);
         fe =   fetchStage.execute(&instruction); //4 - acceptable width from decode.
-        DisplayFinishedInstructions();
+       // DisplayFinishedInstructions();
         return eofFlag && rt && wb && ex && iq && di && rr && rn && de && fe ;
     }
 

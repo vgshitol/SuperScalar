@@ -14,20 +14,20 @@ public:
     vector <Instruction> instruction;
     int width;
 
-    bool execute(vector<Instruction> *instructionsVector) {
+    bool execute(vector<Instruction> *instructionsVector, vector<Instruction> *dispatchInstructions , int pipeline_width = 1) {
 
         if(!instructionsVector->empty()) {
             int skipped_count = 0;
             int instr_size = instruction.size();
-            for (int i = 0; (i < width - instr_size) && !instructionsVector->empty(); ++i) {
-                Instruction temp_instruction = instructionsVector->at(0);
+            int i = 0;
+            while ((i < min((width - instr_size),pipeline_width)) && !instructionsVector->empty() && (skipped_count < instructionsVector->size())) {
+                Instruction temp_instruction = instructionsVector->at(0+skipped_count);
                 // If instruction is ready to execute
                 if (temp_instruction.issue_valid && temp_instruction.rs1_ready && temp_instruction.rs2_ready){
                     instruction.push_back(temp_instruction); // get the first instruction from the file
-                    instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
+                    instructionsVector->erase(instructionsVector->begin() + skipped_count); // erase the first instruction from the file
+                    ++i;
                 } else {
-                    instructionsVector->push_back(temp_instruction); // put the first instruction from the file to the last
-                    instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
                     skipped_count++;
                 }
             }
@@ -48,6 +48,16 @@ public:
 
                         if(instructionsVector->at(j).rs2 == instruction.at(i).dest){
                             instructionsVector->at(j).rs2_ready = true;
+                        }
+                    }
+
+                    for (int j = 0; j < dispatchInstructions->size(); ++j) {
+                        if(dispatchInstructions->at(j).rs1 == instruction.at(i).dest){
+                            dispatchInstructions->at(j).rs1_ready = true;
+                        }
+
+                        if(dispatchInstructions->at(j).rs2 == instruction.at(i).dest){
+                            dispatchInstructions->at(j).rs2_ready = true;
                         }
                     }
                 }
