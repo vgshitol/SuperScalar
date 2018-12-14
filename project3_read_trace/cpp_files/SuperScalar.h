@@ -83,7 +83,7 @@ public:
         this->retireStage.width = width;
 
 
-     }
+    }
 
     void setInstructions(unsigned long pc, int op_code, int dest, int src1, int src2, int width_counter, unsigned long int instruction_number) {
         Instruction temp_instr;
@@ -141,25 +141,25 @@ public:
             cout << "RT{"<< rtTime <<"," << temp_instruction.RetireCycle << "} ";
 
             cout << endl;
-    i++;
-         //   finishedInstruction.erase(finishedInstruction.begin());
+            i++;
+            //   finishedInstruction.erase(finishedInstruction.begin());
 
         }
     }
 
     bool architectureStages(void){
-       rt = retireStage.execute(&writebackStage.instruction, &rob, &executeStage.instruction, &issueQueueStage.instruction,
-                &dispatchStage.instruction, &registerReadStage.instruction, &renameStage.instruction , &finishedInstruction);
+        rt = retireStage.execute(&writebackStage.instruction, &rob, &rmt, &executeStage.instruction, &issueQueueStage.instruction,
+                                 &dispatchStage.instruction, &registerReadStage.instruction, &renameStage.instruction , &finishedInstruction);
         wb = writebackStage.execute(&executeStage.instruction, &issueQueueStage.instruction, &dispatchStage.instruction,
-                &registerReadStage.instruction, &renameStage.instruction, &rob);
-       ex =  executeStage.execute(&issueQueueStage.instruction);
+                                    &registerReadStage.instruction, &renameStage.instruction, &rob);
+        ex =  executeStage.execute(&issueQueueStage.instruction);
         iq = issueQueueStage.execute(&dispatchStage.instruction, dispatchStage.width);
-       di =  dispatchStage.execute(&registerReadStage.instruction);
-       rr =  registerReadStage.execute(&renameStage.instruction, &rob);
-       rn =  renameStage.execute(&decodeStage.instruction, &rmt, &rob, rob_size);
+        di =  dispatchStage.execute(&registerReadStage.instruction);
+        rr =  registerReadStage.execute(&renameStage.instruction, &rob);
+        rn =  renameStage.execute(&decodeStage.instruction, &rmt, &rob, rob_size);
         de = decodeStage.execute(&fetchStage.instruction);
-      fe =   fetchStage.execute(&instruction); //4 - acceptable width from decode.
-
+        fe =   fetchStage.execute(&instruction); //4 - acceptable width from decode.
+        DisplayFinishedInstructions();
         return eofFlag && rt && wb && ex && iq && di && rr && rn && de && fe ;
     }
 

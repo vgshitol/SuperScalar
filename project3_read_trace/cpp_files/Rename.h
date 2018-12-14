@@ -30,7 +30,7 @@ public:
                     // if renaming is to be done from Reorder Buffer
                     if (rmt->at(temp_instruction.rs1).valid) {
                         // assign the register the value in reorder buffer
-                        temp_instruction.rs1 = rmt->at(temp_instruction.rs1).rob_tag  + 100;
+                        temp_instruction.rs1 = rmt->at(temp_instruction.rs1).rob_tag;
 
                     } else {
                         // Do nothing meaning take the value from the ARF register.
@@ -40,7 +40,7 @@ public:
                 if(temp_instruction.rs2 != -1){
                     if(rmt->at(temp_instruction.rs2).valid){
                         // assign the register the value in reorder buffer
-                        temp_instruction.rs2 = rmt->at(temp_instruction.rs2).rob_tag  + 100;
+                        temp_instruction.rs2 = rmt->at(temp_instruction.rs2).rob_tag;
 
                     } else {
                         // Do nothing meaning take the value from the ARF register.
@@ -56,10 +56,10 @@ public:
                     }
 
                     rmt->at(temp_instruction.dest).valid = true;
-                    rmt->at(temp_instruction.dest).rob_tag = static_cast<int>(rob->size() - 1);
+                    rmt->at(temp_instruction.dest).rob_tag = static_cast<int>(rob->size() - 1) + 100;
                     // assign the register the value in reorder buffer
 
-                    temp_instruction.dest = rmt->at(temp_instruction.dest).rob_tag + 100;
+                    temp_instruction.dest = rmt->at(temp_instruction.dest).rob_tag;
 
                 } else {
                     // Do nothing meaning its an instruction that doesnt need to write.

@@ -94,6 +94,7 @@ public:
 
 
 
+
                     instruction.push_back(temp_instruction); // get the first instruction from the file
                     instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
 
