@@ -59,9 +59,11 @@ public:
                             else if(instruction.at(j).dest == 100) instruction.at(j).dest = rob->at(0).dest;
                     }
 
-                    rob->erase(rob->begin());
-                    finishedInstruction->push_back(instruction.at(inst_num)); // get the first instruction from the file
-                    instruction.erase(instruction.begin()+ inst_num);
+                    for (int j = 0; j < rmt->size(); ++j) {
+                        if((rmt->at(j).rob_tag  > 100) && rmt->at(j).valid) {
+                            rmt->at(j).rob_tag--;
+                        }
+                    }
 
                     for (int j = 0; j < executeInstructions->size(); ++j) {
                         if(executeInstructions->at(j).rs1 > 100) executeInstructions->at(j).rs1--;
@@ -108,18 +110,10 @@ public:
                         else if(renameInstructions->at(j).dest == 100) renameInstructions->at(j).dest = rob->at(0).dest;
                     }
 
-                    for (int j = 0; j < rmt->size(); ++j) {
-                        for (int k = 0; k < rob->size(); ++k) {
-                            if (rob->at(k).dest != -1){
-                                if(rmt->at(rob->at(k).dest).rob_tag  > 100) {
-                                    rmt->at(rob->at(k).dest).rob_tag--;
-                                } else if (rmt->at(rob->at(k).dest).rob_tag  == 100){
-                                    rmt->at(rob->at(k).dest).rob_tag = rob->at(k).dest;
-                                }
-                            }
+                    rob->erase(rob->begin());
+                    finishedInstruction->push_back(instruction.at(inst_num)); // get the first instruction from the file
+                    instruction.erase(instruction.begin()+ inst_num);
 
-                        }
-                    }
                 }
             }
         }

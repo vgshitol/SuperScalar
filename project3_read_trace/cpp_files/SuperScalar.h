@@ -161,7 +161,7 @@ public:
         rn =  renameStage.execute(&decodeStage.instruction, &rmt, &rob, rob_size);
         de = decodeStage.execute(&fetchStage.instruction);
         fe =   fetchStage.execute(&instruction); //4 - acceptable width from decode.
-       // DisplayFinishedInstructions();
+    //    DisplayFinishedInstructions();
         return eofFlag && rt && wb && ex && iq && di && rr && rn && de && fe ;
     }
 

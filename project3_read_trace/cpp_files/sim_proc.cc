@@ -16,11 +16,6 @@
     ... and so on
 */
 
-enum important_flags{
-    COMPLETE,
-    NOT_COMPLETE
-};
-
 enum stateOfInput{
     GET_INSTRUCTION_FROM_FILE,
     PROCESS_PIPELINE,
@@ -68,35 +63,32 @@ int main (int argc, char* argv[])
     enum stateOfInput nextstate = GET_INSTRUCTION_FROM_FILE;
 
     int instruction_counter = 0;
-    bool pipelineComplete = false;
+    bool pipelineComplete;
 
     unsigned long int instruction_number = 0;
     do{
 
         switch (currentState){
             case GET_INSTRUCTION_FROM_FILE:{
-                fileReturn = fscanf(FP, "%lx %d %d %d %d", &pc, &op_type, &dest, &src1, &src2);
-                instruction_counter++;
-                int acceptableWidth = superScalar.getAcceptableWidth();
-                if(instruction_counter >= acceptableWidth){
-                    instruction_counter = 0;
+
+                if(superScalar.getAcceptableWidth() > 0){
+                    fileReturn = fscanf(FP, "%lx %d %d %d %d", &pc, &op_type, &dest, &src1, &src2);
+
+                    if(fileReturn != EOF){
+                        superScalar.setInstructions(pc, op_type, dest, src1, src2, width_counter, instruction_number);
+                        nextstate = GET_INSTRUCTION_FROM_FILE;
+                        superScalar.endOfInstructions(false);
+                        instruction_number++;
+                    }
+
+                    if(fileReturn == EOF){
+                        superScalar.endOfInstructions(true);
+                        nextstate = PROCESS_PIPELINE;
+                    }
+                }
+                else if(superScalar.getAcceptableWidth() <= 0) {
                     nextstate = PROCESS_PIPELINE;
-
-                } else{
-                    nextstate = GET_INSTRUCTION_FROM_FILE;
                 }
-
-                if(fileReturn != EOF){
-                    superScalar.setInstructions(pc, op_type, dest, src1, src2, width_counter, instruction_number);
-                    superScalar.endOfInstructions(false);
-                }
-
-                if(fileReturn == EOF){
-                    superScalar.endOfInstructions(true);
-                }
-                instruction_number++;
-
-                //     printf("%lx %d %d %d %d\n", pc, op_type, dest, src1, src2); //Print to check if inputs have been read correctly
             }
             break;
             case PROCESS_PIPELINE: {
@@ -104,13 +96,8 @@ int main (int argc, char* argv[])
                 if(pipelineComplete)nextstate = DONE;
                 else nextstate = GET_INSTRUCTION_FROM_FILE;
             }
-                break;
-            case DONE:{
-
-            }
-            default: {
-            }
-
+            break;
+            case DONE:break;
         }
 
         currentState = nextstate;

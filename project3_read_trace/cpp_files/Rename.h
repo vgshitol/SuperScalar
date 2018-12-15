@@ -18,7 +18,7 @@ public:
 
     bool execute(vector<Instruction> *instructionsVector, vector<RMT> * rmt, vector<ReorderBuffer> * rob, int rob_size) {
 
-        if(!instructionsVector->empty() && (rob->size() <= rob_size)) {
+        if(!instructionsVector->empty() && (rob->size() < rob_size)) {
             int process_width = width - instruction.size();
             int instr_size = instruction.size();
             for (int i = 0; i < width - instr_size; ++i) {
