@@ -15,9 +15,9 @@ public:
     vector <Instruction> instruction;
     int width;
 
-    bool execute(vector<Instruction> *instructionsVector, vector<ReorderBuffer> *rob) {
+    bool execute(vector<Instruction> *instructionsVector, vector<ReorderBuffer> *rob, bool renameComplete = false) {
 
-        if(!instructionsVector->empty()) {
+        if(!instructionsVector->empty() && instruction.size() < width && renameComplete) {
             int instr_size = instruction.size();
             for (int i = 0; i < width - instr_size; ++i) {
                 // Get the readiness from rob

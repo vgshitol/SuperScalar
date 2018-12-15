@@ -26,9 +26,22 @@ public:
     int ExecuteCycle;
     int WriteBackCycle;
     int RetireCycle;
+    int timingCycle;
+
+    int fetchStart;
+    int decodeStart;
+    int renameStart;
+    int registerReadStart;
+    int DispatchStart;
+    int IssueQueueStart;
+    int ExecuteStart;
+    int WriteBackStart;
+    int RetireStart;
+
+
 
     void setInstructionParameters(unsigned long pc, int op_code, int dest, int src1, int src2, bool rs1_ready = true,
-            bool rs2_ready = true, unsigned long int instructionNumber = 0 ){
+            bool rs2_ready = true, unsigned long int instructionNumber = 0 , unsigned long int timingCycle = 0){
 
         this->pc = pc;
         this->op_code = op_code;
@@ -44,6 +57,18 @@ public:
         this->ExecuteCycle = 0;
         this->WriteBackCycle = 0;
         this->RetireCycle = 0;
+        this->timingCycle = timingCycle;
+
+        this->fetchStart = 0;
+        this->decodeStart = 0;
+        this->renameStart = 0;
+        this->registerReadStart = 0;
+        this->DispatchStart = 0;
+        this->IssueQueueStart = 0;
+        this->ExecuteStart = 0;
+        this->WriteBackStart = 0;
+        this->RetireStart = 0;
+
         this->rs1_ready = rs1_ready;
         this->rs2_ready = rs2_ready;
         this->instructionNumber = instructionNumber;

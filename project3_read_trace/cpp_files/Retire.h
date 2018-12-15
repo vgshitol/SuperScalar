@@ -23,7 +23,7 @@ public:
                  vector<Instruction> *dispatchInstructions, vector<Instruction> *registerReadInstructions,
                  vector<Instruction> * renameInstructions, vector<Instruction> *finishedInstruction ) {
 
-        while (!instructionsVector->empty()) {
+        while (!instructionsVector->empty() && instruction.size() <= rob->size()) {
 
             instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
             instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file

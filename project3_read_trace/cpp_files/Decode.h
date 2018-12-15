@@ -13,8 +13,13 @@ class Decode{
 public:
     vector <Instruction> instruction;
     int width;
+    bool decodeReady;
 
     bool execute(vector<Instruction> *instructionsVector) {
+
+        if(instruction.empty()) decodeReady = true;
+        else decodeReady = false;
+
         if(!instructionsVector->empty()) {
             int instr_size = instruction.size();
             for (int i = 0; i < width - instr_size; ++i) {

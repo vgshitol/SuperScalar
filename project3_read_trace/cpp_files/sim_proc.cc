@@ -62,9 +62,7 @@ int main (int argc, char* argv[])
     enum stateOfInput currentState = GET_INSTRUCTION_FROM_FILE;
     enum stateOfInput nextstate = GET_INSTRUCTION_FROM_FILE;
 
-    int instruction_counter = 0;
     bool pipelineComplete;
-
     unsigned long int instruction_number = 0;
     do{
 
@@ -75,10 +73,11 @@ int main (int argc, char* argv[])
                     fileReturn = fscanf(FP, "%lx %d %d %d %d", &pc, &op_type, &dest, &src1, &src2);
 
                     if(fileReturn != EOF){
-                        superScalar.setInstructions(pc, op_type, dest, src1, src2, width_counter, instruction_number);
+                        superScalar.setInstructions(pc, op_type, dest, src1, src2, width_counter, instruction_number, superScalar.timingCycle);
                         nextstate = GET_INSTRUCTION_FROM_FILE;
                         superScalar.endOfInstructions(false);
                         instruction_number++;
+                        superScalar.timingCycle++;
                     }
 
                     if(fileReturn == EOF){
