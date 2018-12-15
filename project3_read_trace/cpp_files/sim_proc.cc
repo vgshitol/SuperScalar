@@ -40,10 +40,10 @@ int main (int argc, char* argv[])
     params.iq_size      = strtoul(argv[2], NULL, 10);
     params.width        = strtoul(argv[3], NULL, 10);
     trace_file          = argv[4];
-    printf("rob_size:%lu "
-           "iq_size:%lu "
-           "width:%lu "
-           "tracefile:%s\n", params.rob_size, params.iq_size, params.width, trace_file);
+//    printf("rob_size:%lu "
+//           "iq_size:%lu "
+//           "width:%lu "
+//           "tracefile:%s\n", params.rob_size, params.iq_size, params.width, trace_file);
 
     SuperScalar superScalar(params.rob_size, params.iq_size,params.width);
 
@@ -77,7 +77,6 @@ int main (int argc, char* argv[])
                         nextstate = GET_INSTRUCTION_FROM_FILE;
                         superScalar.endOfInstructions(false);
                         instruction_number++;
-            //            superScalar.timingCycle++;
                     }
 
                     if(fileReturn == EOF){
@@ -105,6 +104,22 @@ int main (int argc, char* argv[])
     }while (currentState != DONE);
 
     superScalar.DisplayFinishedInstructions();
+//    superScalar.finalResults();
+    cout << "# === Simulator Command =========" << endl;
+    printf("./sim rob_size:%lu "
+           "iq_size:%lu "
+           "width:%lu "
+           "tracefile:%s\n", params.rob_size, params.iq_size, params.width, trace_file);
+    cout << "# === Processor Configuration ===" << endl;
+    cout << "# ROB_SIZE =" <<  params.rob_size << endl;
+    cout << "# IQ_SIZE  =" <<  params.iq_size << endl;
+    cout << "# WIDTH    =" <<  params.width << endl;
+    cout << "# === Simulation Results ========" << endl;
+    cout << "# Dynamic Instruction Count    = " << superScalar.NumberOfInstructions << endl;
+    cout << "# Cycles                       = " << superScalar.endTime << endl;
+    cout << "# Instructions Per Cycle (IPC) = ";
+    float cyclesPerInstruction = (float) superScalar.NumberOfInstructions/ superScalar.endTime* 1.0;
 
+    printf("%.2f\n", cyclesPerInstruction);
     return 0;
 }

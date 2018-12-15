@@ -56,8 +56,8 @@ public:
     Writeback writebackStage;
     Retire retireStage;
     unsigned long stallCycle;
-
-    unsigned long timingCycle;
+    int endTime;
+    unsigned long NumberOfInstructions;
 
 
     int getAcceptableWidth() {
@@ -71,7 +71,7 @@ public:
      * @param iq_size
      * @param width
      */
-    SuperScalar(int rob_size, int iq_size, int width, unsigned long int timingCycle = 0, unsigned long int stallCycle = 0){
+    SuperScalar(int rob_size, int iq_size, int width, unsigned long int stallCycle = 0){
         this->rob_size = rob_size;
         this->iq_size = iq_size;
         this->width =  width;
@@ -86,8 +86,8 @@ public:
         this->executeStage.width = width*5;
         this->writebackStage.width = width*5;
         this->retireStage.width = width;
-        this->timingCycle = timingCycle;
         this->stallCycle = stallCycle;
+
 
 
     }
@@ -95,7 +95,7 @@ public:
     void setInstructions(unsigned long pc, int op_code, int dest, int src1, int src2, int width_counter,
             unsigned long int instruction_number) {
         Instruction temp_instr;
-        temp_instr.setInstructionParameters(pc,  op_code,  dest,  src1,  src2, true, true,instruction_number, timingCycle);
+        temp_instr.setInstructionParameters(pc,  op_code,  dest,  src1,  src2, true, true,instruction_number);
         instruction.push_back(temp_instr);
     }
 
@@ -137,8 +137,6 @@ public:
 
             cout << temp_instruction.instructionNumber << " ";
 
-            cout << temp_instruction.fetchStart << " ";
-
             cout << "fu{" << temp_instruction.op_code << "} ";
             cout << "src{" << temp_instruction.rs1 << "," << temp_instruction.rs2 << "} ";
             cout << "dst{" << temp_instruction.dest << "} ";
@@ -155,15 +153,18 @@ public:
             cout << endl;
             i++;
             //   finishedInstruction.erase(finishedInstruction.begin());
+            if(i == finishedInstruction.size()){
+                NumberOfInstructions = temp_instruction.instructionNumber + 1;
+                endTime = temp_instruction.RetireStart + temp_instruction.RetireCycle;
 
+            }
         }
+
     }
 
+
+
     bool architectureStages(void){
-                //Stall the instructions.
-//        for (int i = 0; i < instruction.size(); ++i) {
-//            instruction.at(i).timingCycle = timingCycle; // get the first instruction from the file
-//        }
 
         rt = retireStage.execute(&writebackStage.instruction, &rob, &rmt, &executeStage.instruction, &issueQueueStage.instruction,
                                  &dispatchStage.instruction, &registerReadStage.instruction, &renameStage.instruction , &finishedInstruction);
@@ -177,10 +178,6 @@ public:
         de = decodeStage.execute(&fetchStage.instruction);
         fe =   fetchStage.execute(&instruction, &stallCycle , decodeStage.decodeReady); //4 - acceptable width from decode.
 
-        //Stall the instructions.
-        for (int i = 0; i < instruction.size(); ++i) {
-            instruction.at(i).timingCycle = timingCycle; // get the first instruction from the file
-        }
 
 
         //    DisplayFinishedInstructions();
