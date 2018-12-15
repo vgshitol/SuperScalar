@@ -31,6 +31,8 @@ public:
             instruction.at(i).decodeCycle++; // get the first instruction from the file
         }
 
+
+
         return instruction.empty();
     }
 };

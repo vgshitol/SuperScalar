@@ -15,7 +15,7 @@ public:
     vector <Instruction> instruction;
     int width;
 
-    bool execute(vector<Instruction> *instructionsVector, unsigned long int decodeReady = true) {
+    bool execute(vector<Instruction> *instructionsVector,  unsigned long * stallCycle = 0, unsigned long int decodeReady = true) {
         // Move the Insrtuctions Forward to the next Stage
 
 
@@ -23,21 +23,29 @@ public:
 
             int instr_size = instruction.size();
             for (int i = 0; i < width - instr_size; ++i) {
-                instructionsVector->at(0).fetchStart =  instructionsVector->at(0).timingCycle;
+                instructionsVector->at(0).fetchStart =  instructionsVector->at(0).instructionNumber + *stallCycle;
                 instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
                 instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
-
             }
 
-            //Stall the instructions.
             for (int i = 0; i < instruction.size(); ++i) {
                 instruction.at(i).fetchCycle++; // get the first instruction from the file
             }
-        } else if (!decodeReady){
-            for (int i = 0; i < instructionsVector->size(); ++i) {
-                instructionsVector->at(i).timingCycle++; // get the first instruction from the file
+        }else {
+            *stallCycle += 1;
+
+            for (int i = 0; i < instruction.size(); ++i) {
+                instruction.at(i).fetchStart++; // get the first instruction from the file
             }
+
+            //Stall the instructions.
+//            for (int i = 0; i < instruction.size(); ++i) {
+//                instruction.at(i).timingCycle++; // get the first instruction from the file
+//                instruction.at(i).fetchStart++; // get the first instruction from the file
+//                *timingCycle++;
+//            }
         }
+
 
 
         return instruction.empty();

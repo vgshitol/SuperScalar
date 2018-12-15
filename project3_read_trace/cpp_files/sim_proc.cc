@@ -73,11 +73,11 @@ int main (int argc, char* argv[])
                     fileReturn = fscanf(FP, "%lx %d %d %d %d", &pc, &op_type, &dest, &src1, &src2);
 
                     if(fileReturn != EOF){
-                        superScalar.setInstructions(pc, op_type, dest, src1, src2, width_counter, instruction_number, superScalar.timingCycle);
+                        superScalar.setInstructions(pc, op_type, dest, src1, src2, width_counter, instruction_number );
                         nextstate = GET_INSTRUCTION_FROM_FILE;
                         superScalar.endOfInstructions(false);
                         instruction_number++;
-                        superScalar.timingCycle++;
+            //            superScalar.timingCycle++;
                     }
 
                     if(fileReturn == EOF){

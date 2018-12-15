@@ -55,6 +55,7 @@ public:
     Execute executeStage;
     Writeback writebackStage;
     Retire retireStage;
+    unsigned long stallCycle;
 
     unsigned long timingCycle;
 
@@ -70,7 +71,7 @@ public:
      * @param iq_size
      * @param width
      */
-    SuperScalar(int rob_size, int iq_size, int width, unsigned long int timingCycle = 0){
+    SuperScalar(int rob_size, int iq_size, int width, unsigned long int timingCycle = 0, unsigned long int stallCycle = 0){
         this->rob_size = rob_size;
         this->iq_size = iq_size;
         this->width =  width;
@@ -86,12 +87,13 @@ public:
         this->writebackStage.width = width*5;
         this->retireStage.width = width;
         this->timingCycle = timingCycle;
+        this->stallCycle = stallCycle;
 
 
     }
 
     void setInstructions(unsigned long pc, int op_code, int dest, int src1, int src2, int width_counter,
-            unsigned long int instruction_number, unsigned long int timingCycle = 0) {
+            unsigned long int instruction_number) {
         Instruction temp_instr;
         temp_instr.setInstructionParameters(pc,  op_code,  dest,  src1,  src2, true, true,instruction_number, timingCycle);
         instruction.push_back(temp_instr);
@@ -120,7 +122,7 @@ public:
     void DisplayFinishedInstructions(){
     //    sortFinishedInstructions();
         int i = 0;
-        while (!finishedInstruction.empty() && i <= 135 && i < finishedInstruction.size()){ // && i <= 135
+        while (!finishedInstruction.empty() && i < finishedInstruction.size()){ // && i <= 135
             Instruction temp_instruction = finishedInstruction.at(i);
 
 
@@ -173,12 +175,13 @@ public:
         rr =  registerReadStage.execute(&renameStage.instruction, &rob, renameStage.renameComplete);
         rn =  renameStage.execute(&decodeStage.instruction, &rmt, &rob, rob_size);
         de = decodeStage.execute(&fetchStage.instruction);
-        fe =   fetchStage.execute(&instruction, decodeStage.decodeReady); //4 - acceptable width from decode.
+        fe =   fetchStage.execute(&instruction, &stallCycle , decodeStage.decodeReady); //4 - acceptable width from decode.
 
         //Stall the instructions.
         for (int i = 0; i < instruction.size(); ++i) {
             instruction.at(i).timingCycle = timingCycle; // get the first instruction from the file
         }
+
 
         //    DisplayFinishedInstructions();
         return eofFlag && rt && wb && ex && iq && di && rr && rn && de && fe ;
