@@ -8,7 +8,6 @@
 #include <vector>
 #include <math.h>
 #include <algorithm>
-#include "ARF.h"
 #include "RMT.h"
 #include "IssueQueue.h"
 #include "ReorderBuffer.h"
