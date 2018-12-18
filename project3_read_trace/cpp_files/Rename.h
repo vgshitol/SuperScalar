@@ -16,12 +16,20 @@ public:
     vector <Instruction> instruction;
     int width;
     bool renameComplete;
+    bool lastCycle;
 
-    bool execute(vector<Instruction> *instructionsVector, vector<RMT> * rmt, vector<ReorderBuffer> * rob, int rob_size) {
+    bool execute(vector<Instruction> *instructionsVector, vector<RMT> * rmt, vector<ReorderBuffer> * rob, int rob_size, bool lastCycle = false) {
 
-        if(!instructionsVector->empty()) {
-            int instr_size = instruction.size();
-            for (int i = 0; i < width - instr_size; ++i) {
+        this->lastCycle = lastCycle;
+        int numberOfInstructionsInLoop;
+        int instr_size = instruction.size();
+
+        if(lastCycle) numberOfInstructionsInLoop = instructionsVector->size();
+        else numberOfInstructionsInLoop = width - instr_size;
+
+
+        if(!instructionsVector->empty() && instruction.empty()) {
+            for (int i = 0; i < numberOfInstructionsInLoop; ++i) {
                 instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
                 instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
                 renameComplete = false;
@@ -29,7 +37,8 @@ public:
         }
 
         if(!renameComplete) {
-            for (int i = 0; i < instruction.size() && rob->size() <= rob_size - width; ++i) {
+            int robsize = rob->size();
+            for (int i = 0; i < instruction.size() && (robsize <= rob_size - width); ++i) {
                 // Process the instruction
                 if (instruction.at(i).rs1 != -1) {
                     // if renaming is to be done from Reorder Buffer
@@ -76,8 +85,8 @@ public:
 
                     instruction.at(i).dest = rob->size() - 1 + 100;
                 }
-
                 renameComplete = true;
+
             }
         }
 

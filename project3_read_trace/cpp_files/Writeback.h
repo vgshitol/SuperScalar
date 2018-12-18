@@ -6,6 +6,7 @@
 #define SUPERSCALAR_WRITEBACK_H
 #include "vector"
 #include "Instruction.h"
+#include <algorithm>
 #include "ReorderBuffer.h"
 
 using namespace std;
@@ -25,12 +26,12 @@ public:
             int skipped_count = 0;
             int instr_size = instruction.size();
             int executeInstrSize = instructionsVector->size(); //
-            while ((i < min((width - instr_size), executeInstrSize)) && !instructionsVector->empty()) {
-                Instruction temp_instruction = instructionsVector->at(0);
+            while ((i < min((width - instr_size), (int)instructionsVector->size())) && !instructionsVector->empty()) {
+                Instruction temp_instruction = instructionsVector->at(i);
 
-                if (((instructionsVector->at(0).ExecuteCycle == 5) && (instructionsVector->at(0).op_code == 2))
-                ||((instructionsVector->at(0).ExecuteCycle == 2) && (instructionsVector->at(0).op_code == 1))
-                ||((instructionsVector->at(0).ExecuteCycle == 1) && (instructionsVector->at(0).op_code == 0))){
+                if (((temp_instruction.ExecuteCycle == 5) && (temp_instruction.op_code == 2))
+                ||((temp_instruction.ExecuteCycle == 2) && (temp_instruction.op_code == 1))
+                ||((temp_instruction.ExecuteCycle == 1) && (temp_instruction.op_code == 0))){
                     // process instruction, wake up the ready bits from everywhere. Execution, IssueQueue, RegisterRead, ROB
                     int destreg;
                     if(temp_instruction.dest >= 100 ) {
@@ -73,14 +74,11 @@ public:
                     }
 
                     instruction.push_back(temp_instruction); // get the first instruction from the file
-                    instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
+                    instructionsVector->erase(instructionsVector->begin()+i); // erase the first instruction from the file
 
                 } else {
-                    instructionsVector->push_back(temp_instruction); // put the first instruction from the file to the last
-                    instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
-                    skipped_count++;
+                    i++;
                 }
-                i++;
             }
         }
 

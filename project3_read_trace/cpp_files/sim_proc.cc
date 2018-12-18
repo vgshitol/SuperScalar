@@ -16,19 +16,12 @@
     ... and so on
 */
 
-enum stateOfInput{
-    GET_INSTRUCTION_FROM_FILE,
-    PROCESS_PIPELINE,
-    DONE
-};
 
 int main (int argc, char* argv[])
 {
     FILE *FP;               // File handler
     char *trace_file;       // Variable that holds trace file name;
     proc_params params;       // look at sim_bp.h header file for the the definition of struct proc_params
-    int op_type, dest, src1, src2;  // Variables are read from trace file
-    unsigned long int pc; // Variable holds the pc read from input file
 
     if (argc != 5)
     {
@@ -56,55 +49,11 @@ int main (int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
-    int fileReturn;
-    int width_counter = 0;
-
-    enum stateOfInput currentState = GET_INSTRUCTION_FROM_FILE;
-    enum stateOfInput nextstate = GET_INSTRUCTION_FROM_FILE;
-
-    bool pipelineComplete;
-    unsigned long int instruction_number = 0;
-    do{
-
-        switch (currentState){
-            case GET_INSTRUCTION_FROM_FILE:{
-
-                if(superScalar.getAcceptableWidth() > 0){
-                    fileReturn = fscanf(FP, "%lx %d %d %d %d", &pc, &op_type, &dest, &src1, &src2);
-
-                    if(fileReturn != EOF){
-                        superScalar.setInstructions(pc, op_type, dest, src1, src2, width_counter, instruction_number );
-                        nextstate = GET_INSTRUCTION_FROM_FILE;
-                        superScalar.endOfInstructions(false);
-                        instruction_number++;
-                    }
-
-                    if(fileReturn == EOF){
-                        superScalar.endOfInstructions(true);
-                        nextstate = PROCESS_PIPELINE;
-                    }
-                }
-                else if(superScalar.getAcceptableWidth() <= 0) {
-                    nextstate = PROCESS_PIPELINE;
-                }
-            }
-            break;
-            case PROCESS_PIPELINE: {
-                pipelineComplete = superScalar.architectureStages();
-                if(pipelineComplete)nextstate = DONE;
-                else nextstate = GET_INSTRUCTION_FROM_FILE;
-            }
-            break;
-            case DONE:break;
-        }
-
-        currentState = nextstate;
-
-
-    }while (currentState != DONE);
+    superScalar.GetInstructionFromFile(FP);
 
     superScalar.DisplayFinishedInstructions();
-//    superScalar.finalResults();
+
+    //    superScalar.finalResults();
     cout << "# === Simulator Command =========" << endl;
     printf("./sim rob_size:%lu "
            "iq_size:%lu "

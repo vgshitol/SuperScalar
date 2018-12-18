@@ -14,20 +14,28 @@ class Fetch {
 public:
     vector <Instruction> instruction;
     int width;
+    bool lastCycle;
 
-    bool execute(vector<Instruction> *instructionsVector,  unsigned long * stallCycle = 0, unsigned long int decodeReady = true) {
+    bool execute(vector<Instruction> *instructionsVector,  unsigned long * stallCycle = 0, bool lastCycle = false) {
         // Move the Insrtuctions Forward to the next Stage
+        this->lastCycle = lastCycle;
+        int numberOfInstructionsInLoop;
+        int instr_size = instruction.size();
+
+        if(lastCycle && instructionsVector->size() < width) numberOfInstructionsInLoop = instructionsVector->size();
+        else numberOfInstructionsInLoop = width - instr_size;
 
 
-        if(!instructionsVector->empty() && decodeReady) {
+        if(!instructionsVector->empty() && instruction.empty()) {
 
             int instr_size = instruction.size();
-            for (int i = 0; i < width - instr_size; ++i) {
-                instructionsVector->at(0).fetchStart =  instructionsVector->at(0).instructionNumber + *stallCycle;
-                instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
-                instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
-            }
+                for (int i = 0; i < numberOfInstructionsInLoop; ++i) {
+                    instructionsVector->at(0).fetchStart +=  *stallCycle;
+                    instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
+                    instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
+                }
 
+            // fetch cannot stall
             for (int i = 0; i < instruction.size(); ++i) {
                 instruction.at(i).fetchCycle++; // get the first instruction from the file
             }
@@ -38,12 +46,6 @@ public:
                 instruction.at(i).fetchStart++; // get the first instruction from the file
             }
 
-            //Stall the instructions.
-//            for (int i = 0; i < instruction.size(); ++i) {
-//                instruction.at(i).timingCycle++; // get the first instruction from the file
-//                instruction.at(i).fetchStart++; // get the first instruction from the file
-//                *timingCycle++;
-//            }
         }
 
 

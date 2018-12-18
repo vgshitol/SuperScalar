@@ -14,12 +14,19 @@ class RegisterRead{
 public:
     vector <Instruction> instruction;
     int width;
+    bool lastCycle;
 
-    bool execute(vector<Instruction> *instructionsVector, vector<ReorderBuffer> *rob, bool renameComplete = false) {
+    bool execute(vector<Instruction> *instructionsVector, vector<ReorderBuffer> *rob, bool renameComplete = false, bool lastCycle = false) {
 
-        if(!instructionsVector->empty() && instruction.size() < width && renameComplete) {
-            int instr_size = instruction.size();
-            for (int i = 0; i < width - instr_size; ++i) {
+        this->lastCycle = lastCycle;
+        int numberOfInstructionsInLoop;
+        int instr_size = instruction.size();
+
+        if(lastCycle) numberOfInstructionsInLoop = instructionsVector->size();
+        else numberOfInstructionsInLoop = width - instr_size;
+
+        if(!instructionsVector->empty() && instruction.empty() && renameComplete) {
+            for (int i = 0; i < numberOfInstructionsInLoop; ++i) {
                 // Get the readiness from rob
                 Instruction temp_instruction = instructionsVector->at(0);
 

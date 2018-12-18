@@ -14,19 +14,27 @@ public:
     vector <Instruction> instruction;
     int width;
     bool decodeReady;
+    bool lastCycle;
 
-    bool execute(vector<Instruction> *instructionsVector) {
+    bool execute(vector<Instruction> *instructionsVector, bool lastCycle = false) {
+        this->lastCycle = lastCycle;
+        int numberOfInstructionsInLoop;
+        int instr_size = instruction.size();
+
+        if(lastCycle) numberOfInstructionsInLoop = instructionsVector->size();
+        else numberOfInstructionsInLoop = width - instr_size;
 
         if(instruction.empty()) decodeReady = true;
         else decodeReady = false;
 
-        if(!instructionsVector->empty()) {
-            int instr_size = instruction.size();
-            for (int i = 0; i < width - instr_size; ++i) {
+       if(!instructionsVector->empty() && instruction.empty()) {
+
+            for (int i = 0; i < numberOfInstructionsInLoop; ++i) {
                 instruction.push_back(instructionsVector->at(0)); // get the first instruction from the file
                 instructionsVector->erase(instructionsVector->begin()); // erase the first instruction from the file
             }
         }
+
         for (int i = 0; i < instruction.size(); ++i) {
             instruction.at(i).decodeCycle++; // get the first instruction from the file
         }

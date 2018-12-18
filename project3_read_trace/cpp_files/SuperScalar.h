@@ -26,6 +26,13 @@
 
 using namespace std;
 
+enum stateOfInput{
+
+    GET_INSTRUCTION_FROM_FILE,
+    PROCESS_PIPELINE,
+    DONE
+};
+
 class SuperScalar{
 public:
     int rob_size;
@@ -58,6 +65,7 @@ public:
     unsigned long stallCycle;
     int endTime;
     unsigned long NumberOfInstructions;
+    int instructionLoad;
 
 
     int getAcceptableWidth() {
@@ -71,7 +79,7 @@ public:
      * @param iq_size
      * @param width
      */
-    SuperScalar(int rob_size, int iq_size, int width, unsigned long int stallCycle = 0){
+    SuperScalar(int rob_size, int iq_size, int width, unsigned long int stallCycle = 0, int instructionLoad = 0){
         this->rob_size = rob_size;
         this->iq_size = iq_size;
         this->width =  width;
@@ -87,6 +95,7 @@ public:
         this->writebackStage.width = width*5;
         this->retireStage.width = width;
         this->stallCycle = stallCycle;
+        this->instructionLoad = instructionLoad;
 
 
 
@@ -120,7 +129,6 @@ public:
     }
 
     void DisplayFinishedInstructions(){
-    //    sortFinishedInstructions();
         int i = 0;
         while (!finishedInstruction.empty() && i < finishedInstruction.size()){ // && i <= 135
             Instruction temp_instruction = finishedInstruction.at(i);
@@ -162,26 +170,137 @@ public:
 
     }
 
+  void DisplayFinishedInstructions2(){
+    //    sortFinishedInstructions();
+        int i = 0;
+      while (!finishedInstruction.empty()){ // && i <= 135
+            Instruction temp_instruction = finishedInstruction.at(0);
+
+
+            temp_instruction.decodeStart = temp_instruction.fetchStart + temp_instruction.fetchCycle;
+            temp_instruction.renameStart = temp_instruction.decodeStart + temp_instruction.decodeCycle;
+            temp_instruction.registerReadStart = temp_instruction.renameStart + temp_instruction.renameCycle;
+            temp_instruction.DispatchStart = temp_instruction.registerReadStart + temp_instruction.registerReadCycle;
+            temp_instruction.IssueQueueStart = temp_instruction.DispatchStart + temp_instruction.DispatchCycle;
+            temp_instruction.ExecuteStart = temp_instruction.IssueQueueStart + temp_instruction.IssueQueueCycle;
+            temp_instruction.WriteBackStart = temp_instruction.ExecuteStart + temp_instruction.ExecuteCycle;
+            temp_instruction.RetireStart = temp_instruction.WriteBackStart + temp_instruction.WriteBackCycle;
+
+            cout << temp_instruction.instructionNumber << " ";
+
+            cout << "fu{" << temp_instruction.op_code << "} ";
+            cout << "src{" << temp_instruction.rs1 << "," << temp_instruction.rs2 << "} ";
+            cout << "dst{" << temp_instruction.dest << "} ";
+            cout << "FE{" << temp_instruction.fetchStart << "," << temp_instruction.fetchCycle << "} ";
+            cout << "DE{" << temp_instruction.decodeStart <<"," << temp_instruction.decodeCycle << "} ";
+            cout << "RN{"<< temp_instruction.renameStart <<"," << temp_instruction.renameCycle << "} ";
+            cout << "RR{"<< temp_instruction.registerReadStart <<"," << temp_instruction.registerReadCycle << "} ";
+            cout << "DI{"<< temp_instruction.DispatchStart <<"," << temp_instruction.DispatchCycle << "} ";
+            cout << "IS{"<< temp_instruction.IssueQueueStart <<"," << temp_instruction.IssueQueueCycle << "} ";
+            cout << "EX{"<< temp_instruction.ExecuteStart <<"," << temp_instruction.ExecuteCycle << "} ";
+            cout << "WB{"<< temp_instruction.WriteBackStart <<"," << temp_instruction.WriteBackCycle << "} ";
+            cout << "RT{"<< temp_instruction.RetireStart <<"," << temp_instruction.RetireCycle << "} ";
+
+            cout << endl;
+
+            finishedInstruction.erase(finishedInstruction.begin());
+            //   finishedInstruction.erase(finishedInstruction.begin());
+                NumberOfInstructions = temp_instruction.instructionNumber + 1;
+                endTime = temp_instruction.RetireStart + temp_instruction.RetireCycle;
+
+
+        }
+
+    }
+
 
 
     bool architectureStages(void){
+
+
 
         rt = retireStage.execute(&writebackStage.instruction, &rob, &rmt, &executeStage.instruction, &issueQueueStage.instruction,
                                  &dispatchStage.instruction, &registerReadStage.instruction, &renameStage.instruction , &finishedInstruction);
         wb = writebackStage.execute(&executeStage.instruction, &issueQueueStage.instruction, &dispatchStage.instruction,
                                     &registerReadStage.instruction, &renameStage.instruction, &rob);
-        ex =  executeStage.execute(&issueQueueStage.instruction, &dispatchStage.instruction);
-        iq = issueQueueStage.execute(&dispatchStage.instruction, dispatchStage.width);
-        di =  dispatchStage.execute(&registerReadStage.instruction);
-        rr =  registerReadStage.execute(&renameStage.instruction, &rob, renameStage.renameComplete);
-        rn =  renameStage.execute(&decodeStage.instruction, &rmt, &rob, rob_size);
-        de = decodeStage.execute(&fetchStage.instruction);
-        fe =   fetchStage.execute(&instruction, &stallCycle , decodeStage.decodeReady); //4 - acceptable width from decode.
+        ex =  executeStage.execute(&issueQueueStage.instruction, &dispatchStage.instruction,width);
+        iq = issueQueueStage.execute(&dispatchStage.instruction, dispatchStage.width, dispatchStage.lastCycle);
+        di =  dispatchStage.execute(&registerReadStage.instruction, registerReadStage.lastCycle);
+        rr =  registerReadStage.execute(&renameStage.instruction, &rob, renameStage.renameComplete,renameStage.lastCycle);
+        rn =  renameStage.execute(&decodeStage.instruction, &rmt, &rob, rob_size,decodeStage.lastCycle);
+        de = decodeStage.execute(&fetchStage.instruction, fetchStage.lastCycle);
+        fe =   fetchStage.execute(&instruction, &stallCycle, eofFlag); //4 - acceptable width from decode.
 
 
-
-        //    DisplayFinishedInstructions();
+          DisplayFinishedInstructions2();
         return eofFlag && rt && wb && ex && iq && di && rr && rn && de && fe ;
+    }
+
+
+    void GetInstructionFromFile(FILE *FP){
+        enum stateOfInput currentState = GET_INSTRUCTION_FROM_FILE;
+        enum stateOfInput nextstate = GET_INSTRUCTION_FROM_FILE;
+
+        bool pipelineComplete;
+        unsigned long int instruction_number = 0;
+        unsigned long int instruction_Count = 0;
+        int op_type, dest, src1, src2;  // Variables are read from trace file
+        unsigned long int pc; // Variable holds the pc read from input file
+
+        int fileReturn;
+        int width_counter = 0;
+
+        do{
+
+            switch (currentState){
+                case GET_INSTRUCTION_FROM_FILE:{
+
+                    if(getAcceptableWidth() > 0){
+                        fileReturn = fscanf(FP, "%lx %d %d %d %d", &pc, &op_type, &dest, &src1, &src2);
+
+                        if(fileReturn != EOF){
+                            setInstructions(pc, op_type, dest, src1, src2, width_counter, instruction_number );
+                            nextstate = GET_INSTRUCTION_FROM_FILE;
+                            endOfInstructions(false);
+                            instruction_number++;
+                            instruction_Count++;
+                        }
+
+                        if(fileReturn == EOF){
+                            for (int i = 0; i < instruction.size(); ++i) {
+                                instruction.at(i).fetchStart = instructionLoad; // get the first instruction from the file
+                            }
+                            instructionLoad++;
+                            endOfInstructions(true);
+                            nextstate = PROCESS_PIPELINE;
+                        }
+                    }
+                    else if(getAcceptableWidth() <= 0 && fileReturn != EOF) {
+                        if(instruction_Count == width){
+                            for (int i = 0; i < instruction.size(); ++i) {
+                                instruction.at(i).fetchStart = instructionLoad; // get the first instruction from the file
+                            }
+                            instructionLoad++;
+                        }
+                        instruction_Count = 0;
+
+                        nextstate = PROCESS_PIPELINE;
+                    }
+                }
+                    break;
+                case PROCESS_PIPELINE: {
+                    pipelineComplete = architectureStages();
+                    if(pipelineComplete)nextstate = DONE;
+                    else nextstate = GET_INSTRUCTION_FROM_FILE;
+                }
+                    break;
+                case DONE:break;
+            }
+
+            currentState = nextstate;
+
+
+        }while (currentState != DONE);
     }
 
 };
