@@ -37,21 +37,14 @@ public:
     int rob_size;
     int iq_size;
     int width;
+
     vector <RMT> rmt;
     vector <ReorderBuffer> rob;
     vector <Instruction> instruction;
     vector <Instruction> finishedInstruction;
 
     bool eofFlag;
-    bool fe;
-    bool de;
-    bool rn;
-    bool rr;
-    bool di;
-    bool iq;
-    bool ex;
-    bool wb;
-    bool rt;
+
     Fetch fetchStage;
     Decode decodeStage;
     Rename renameStage;
@@ -61,9 +54,13 @@ public:
     Execute executeStage;
     Writeback writebackStage;
     Retire retireStage;
+
     unsigned long stallCycle;
+
     int endTime;
+
     unsigned long NumberOfInstructions;
+
     int instructionLoad;
 
 
@@ -127,48 +124,6 @@ public:
         sort (finishedInstruction.begin(), finishedInstruction.end(),less_than_key()) ;
     }
 
-    void DisplayFinishedInstructions(){
-        int i = 0;
-        while (!finishedInstruction.empty() && i < finishedInstruction.size()){ // && i <= 135
-            Instruction temp_instruction = finishedInstruction.at(i);
-
-
-            temp_instruction.decodeStart = temp_instruction.fetchStart + temp_instruction.fetchCycle;
-            temp_instruction.renameStart = temp_instruction.decodeStart + temp_instruction.decodeCycle;
-            temp_instruction.registerReadStart = temp_instruction.renameStart + temp_instruction.renameCycle;
-            temp_instruction.DispatchStart = temp_instruction.registerReadStart + temp_instruction.registerReadCycle;
-            temp_instruction.IssueQueueStart = temp_instruction.DispatchStart + temp_instruction.DispatchCycle;
-            temp_instruction.ExecuteStart = temp_instruction.IssueQueueStart + temp_instruction.IssueQueueCycle;
-            temp_instruction.WriteBackStart = temp_instruction.ExecuteStart + temp_instruction.ExecuteCycle;
-            temp_instruction.RetireStart = temp_instruction.WriteBackStart + temp_instruction.WriteBackCycle;
-
-            cout << temp_instruction.instructionNumber << " ";
-
-            cout << "fu{" << temp_instruction.op_code << "} ";
-            cout << "src{" << temp_instruction.rs1 << "," << temp_instruction.rs2 << "} ";
-            cout << "dst{" << temp_instruction.dest << "} ";
-            cout << "FE{" << temp_instruction.fetchStart << "," << temp_instruction.fetchCycle << "} ";
-            cout << "DE{" << temp_instruction.decodeStart <<"," << temp_instruction.decodeCycle << "} ";
-            cout << "RN{"<< temp_instruction.renameStart <<"," << temp_instruction.renameCycle << "} ";
-            cout << "RR{"<< temp_instruction.registerReadStart <<"," << temp_instruction.registerReadCycle << "} ";
-            cout << "DI{"<< temp_instruction.DispatchStart <<"," << temp_instruction.DispatchCycle << "} ";
-            cout << "IS{"<< temp_instruction.IssueQueueStart <<"," << temp_instruction.IssueQueueCycle << "} ";
-            cout << "EX{"<< temp_instruction.ExecuteStart <<"," << temp_instruction.ExecuteCycle << "} ";
-            cout << "WB{"<< temp_instruction.WriteBackStart <<"," << temp_instruction.WriteBackCycle << "} ";
-            cout << "RT{"<< temp_instruction.RetireStart <<"," << temp_instruction.RetireCycle << "} ";
-
-            cout << endl;
-            i++;
-            //   finishedInstruction.erase(finishedInstruction.begin());
-            if(i == finishedInstruction.size()){
-                NumberOfInstructions = temp_instruction.instructionNumber + 1;
-                endTime = temp_instruction.RetireStart + temp_instruction.RetireCycle;
-
-            }
-        }
-
-    }
-
   void DisplayFinishedInstructions2(){
     //    sortFinishedInstructions();
         int i = 0;
@@ -215,8 +170,15 @@ public:
 
 
     bool architectureStages(void){
-
-
+        bool fe;
+        bool de;
+        bool rn;
+        bool rr;
+        bool di;
+        bool iq;
+        bool ex;
+        bool wb;
+        bool rt;
 
         rt = retireStage.execute(&writebackStage.instruction, &rob, &rmt, &executeStage.instruction, &issueQueueStage.instruction,
                                  &dispatchStage.instruction, &registerReadStage.instruction, &renameStage.instruction , &finishedInstruction);

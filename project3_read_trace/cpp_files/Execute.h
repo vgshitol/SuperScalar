@@ -33,36 +33,42 @@ public:
             }
         }
 
+        wakeUpIssueQueue(instructionsVector,dispatchInstructions);
+
+
+        return instruction.empty();
+    }
+
+    void wakeUpIssueQueue(vector<Instruction> *instructionsVector,vector<Instruction> *dispatchInstructions  ){
         // stall logic
-            for (int i = 0; i < instruction.size(); ++i) {
-                instruction.at(i).ExecuteCycle++; // get the first instruction from the file
-                if (((instruction.at(i).ExecuteCycle == 5) && (instruction.at(i).op_code == 2))
-                    ||((instruction.at(i).ExecuteCycle == 2) && (instruction.at(i).op_code == 1))
-                    ||((instruction.at(i).ExecuteCycle == 1) && (instruction.at(i).op_code == 0))){
+        for (int i = 0; i < instruction.size(); ++i) {
+            instruction.at(i).ExecuteCycle++; // get the first instruction from the file
+            if (((instruction.at(i).ExecuteCycle == 5) && (instruction.at(i).op_code == 2))
+                ||((instruction.at(i).ExecuteCycle == 2) && (instruction.at(i).op_code == 1))
+                ||((instruction.at(i).ExecuteCycle == 1) && (instruction.at(i).op_code == 0))){
 
-                    // Wake up the IQ
-                    for (int j = 0; j < instructionsVector->size(); ++j) {
-                        if(instructionsVector->at(j).rs1 == instruction.at(i).dest){
-                            instructionsVector->at(j).rs1_ready = true;
-                        }
-
-                        if(instructionsVector->at(j).rs2 == instruction.at(i).dest){
-                            instructionsVector->at(j).rs2_ready = true;
-                        }
+                // Wake up the IQ
+                for (int j = 0; j < instructionsVector->size(); ++j) {
+                    if(instructionsVector->at(j).rs1 == instruction.at(i).dest){
+                        instructionsVector->at(j).rs1_ready = true;
                     }
 
-                    for (int j = 0; j < dispatchInstructions->size(); ++j) {
-                        if(dispatchInstructions->at(j).rs1 == instruction.at(i).dest){
-                            dispatchInstructions->at(j).rs1_ready = true;
-                        }
+                    if(instructionsVector->at(j).rs2 == instruction.at(i).dest){
+                        instructionsVector->at(j).rs2_ready = true;
+                    }
+                }
 
-                        if(dispatchInstructions->at(j).rs2 == instruction.at(i).dest){
-                            dispatchInstructions->at(j).rs2_ready = true;
-                        }
+                for (int j = 0; j < dispatchInstructions->size(); ++j) {
+                    if(dispatchInstructions->at(j).rs1 == instruction.at(i).dest){
+                        dispatchInstructions->at(j).rs1_ready = true;
+                    }
+
+                    if(dispatchInstructions->at(j).rs2 == instruction.at(i).dest){
+                        dispatchInstructions->at(j).rs2_ready = true;
                     }
                 }
             }
-        return instruction.empty();
+        }
     }
 };
 #endif //SUPERSCALAR_EXECUTE_H

@@ -3,6 +3,8 @@
 #include <string.h>
 #include "sim_proc.h"
 #include "SuperScalar.h"
+#include <iostream>
+#include <sstream>
 
 /*  argc holds the number of command line arguments
     argv[] holds the commands themselves
@@ -15,6 +17,8 @@
     argv[2] = "32"
     ... and so on
 */
+
+using namespace std;
 
 
 int main (int argc, char* argv[])
@@ -29,14 +33,15 @@ int main (int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
-    params.rob_size     = strtoul(argv[1], NULL, 10);
-    params.iq_size      = strtoul(argv[2], NULL, 10);
-    params.width        = strtoul(argv[3], NULL, 10);
+    stringstream robSize(argv[1]);
+    stringstream iqSize(argv[2]);
+    stringstream width(argv[3]);
+
+    robSize >> params.rob_size;
+    iqSize >> params.iq_size;
+    width >> params.width;
+
     trace_file          = argv[4];
-//    printf("rob_size:%lu "
-//           "iq_size:%lu "
-//           "width:%lu "
-//           "tracefile:%s\n", params.rob_size, params.iq_size, params.width, trace_file);
 
     SuperScalar superScalar(params.rob_size, params.iq_size,params.width);
 
@@ -51,13 +56,12 @@ int main (int argc, char* argv[])
 
     superScalar.GetInstructionFromFile(FP);
 
-    superScalar.DisplayFinishedInstructions();
 
     //    superScalar.finalResults();
     cout << "# === Simulator Command =========" << endl;
-    printf("./sim rob_size:%lu "
-           "iq_size:%lu "
-           "width:%lu "
+    printf("./sim rob_size:%d "
+           "iq_size:%d "
+           "width:%d "
            "tracefile:%s\n", params.rob_size, params.iq_size, params.width, trace_file);
     cout << "# === Processor Configuration ===" << endl;
     cout << "# ROB_SIZE =" <<  params.rob_size << endl;
